@@ -1,0 +1,167 @@
+### Assign TF
+
+Check transcription factor in the enrichment list if necessary.
+Represent the TF families found with a barplot.
+We'll add an "*" to the barplot if the Fisher's test is sifnificative (p-value <= `r P_FISHER`).
+
+Tutorial for applying Fisher's test:
+<https://statsandr.com/blog/fisher-s-exact-test-in-r-independence-test-for-a-small-sample/>
+
+```{r, fig.show = "hold", out.width = "50%", warning=FALSE}
+# barplot with the TF families found
+# plt <- htmltools::tagList() # not using interactive plots because it doesn´t keep some configuration
+# plt[[LIST_LEVEL]] <- htmltools::tagList()
+# vector of all TF families
+tf_families <- sort(unique(tf$Family))
+# dataframes to save TF results
+tf_all_df <- data.frame(tf_families)
+tf_filt_df <- data.frame(tf_families)
+for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
+  # we need to merge TF again to remove arabidopsis genes that are duplicated
+  name <- names(enrichment_list[[LIST_LEVEL]][i])
+  tmp <- enrichment_list[[LIST_LEVEL]][[i]]@result$geneID
+  tmp <- unique(unlist(strsplit(tmp, "/")))
+  tmp2 <- merge(x = as.data.frame(tmp),
+                y = tf,
+                by.x = 1,
+                by.y = 2)
+  tmp2 <- unique(tmp2[, -2])
+  tf_all <- tmp2$Family
+  tf_all <- na.omit(tf_all)
+  
+  # filter results to keep only significants
+  tmp3 <- enrichment_list[[LIST_LEVEL]][[i]]@result
+  tmp3 <- tmp3[tmp3$p.adjust <= P_CUTOFF,]
+  tmp3 <- tmp3[tmp3$qvalue <= Q_CUTOFF,]
+  tmp3 <- tmp3$geneID
+  tmp3 <- unique(unlist(strsplit(tmp3, "/")))
+  tmp4 <- merge(x = as.data.frame(tmp3),
+                y = tf,
+                by.x = 1,
+                by.y = 2)
+  tmp4 <- unique(tmp4[, -2])
+  tf_filt <- tmp4$Family
+  tf_filt <- na.omit(tf_filt)
+  
+  if ((!is_empty(tf_all) && !is_empty(tf_filt)) == TRUE) {
+    # number of TF for condition i
+    tf_all <- table(tf_all)
+    tf_filt <- table(tf_filt)
+    # save data to use it later
+    tf_all_df <- merge(x = tf_all_df,
+                       y = as.data.frame(tf_all),
+                       by = 1,
+                       all.x = TRUE)
+    number <- length(colnames(tf_all_df))
+    colnames(tf_all_df)[number] <- name
+    tf_filt_df <- merge(x = tf_filt_df,
+                        y = as.data.frame(tf_filt),
+                        by = 1,
+                        all.x = TRUE)
+    number <- length(colnames(tf_all_df))
+    colnames(tf_filt_df)[number] <- name
+    # data to barplot
+    tf_merge <- merge(x = as.data.frame(tf_all),
+                  y = as.data.frame(tf_filt),
+                  by = 1,
+                  all = TRUE)
+    colnames(tf_merge) <- c("family", "total", "filtered")
+    # tf_merge$Fisher <- NA
+    # reshape the dataframe to use ggplot with it
+    library(reshape2)
+    tf_ggdata <- melt(tf_merge[, c('family', 'total', 'filtered')],
+                      id.vars = 1)
+    # tf_ggdata$Fisher <- NA # for Fisher test
+
+    # # data for Fisher test
+    # # total TF
+    # tf_total <- length(unique(tf$Gene_ID))
+    # for (f in 1:length(rownames(tf_merge))) {
+    #   # TF of study
+    #   tf_f <- levels(tf_merge$family)[f]
+    #   # TF f that is a DEG in the comparison
+    #   tf_deg <- tf_merge$total[f]
+    #   # all the TF that is a DEG in the comparison
+    #   tf_total_deg <- sum(tf_merge$total)
+    #   # TF not f that is a DEG in the comparison
+    #   no_tf_deg <- tf_total_deg - tf_deg
+    #   # total TF f
+    #   tf_total_f <- tf[grep(paste0("^", tf_f, "$"), tf$Family), 2] # beware of the isoforms!
+    #   tf_total_f <- length(unique(tf_total_f))
+    #   # TF f that is not a DEG in the comparison
+    #   tf_no_deg <- tf_total_f - tf_deg
+    #   # all the TF that is not a DEG in the comparison???
+    #   tf_total_no_deg <- tf_total - tf_total_deg
+    #   # total TF no f
+    #   tf_total_no_f <- tf_total - tf_total_f
+    #   # TF not f that is not a DEG in the comparison
+    #   no_tf_no_deg <- tf_total_no_f - no_tf_deg
+    #   # create the table
+    #   name <- names(enrichment_list[[LIST_LEVEL]][i])
+    #   tf_dat <- data.frame(
+    #     "deg_yes" = c(tf_deg, no_tf_deg),
+    #     "deg_no" = c(tf_no_deg, no_tf_no_deg),
+    #     row.names = c(paste0(name, " " , tf_f),
+    #                     paste0(name, " no " , tf_f))
+    #   )
+    #   colnames(tf_dat) <- c("DEG", "no DEG")
+    #   # if we have more than 100 data in any cell, we need to use chisq.test
+    #   if (max(tf_dat) > 100) {
+    #     tf_test <- chisq.test(tf_dat)$p.value
+    #   } else tf_test <- fisher.test(tf_dat)$p.value
+    #   # save value
+    #   # tf_merge$Fisher[f] <- tf_test
+    #   tf_ggdata$Fisher[tf_ggdata$variable == "total" & tf_ggdata$family == tf_f] <- tf_test
+    #   } # end for f
+    
+    # barplot
+    max_breaks <- max(tf_ggdata$value, na.rm = TRUE)
+    bp <- ggplot(tf_ggdata, aes(x = value, y = family, fill = variable,
+                                # label = ifelse(Fisher < P_FISHER, "*", "")
+                                )) +
+          geom_bar(stat = "identity", position = "dodge") +
+      # geom_text(position = position_dodge(width = 1),
+      #           size = 5, hjust = -0.5, vjust = 0.7) +
+          scale_fill_manual(values = c("#595959", "red")) + # define colors
+      scale_x_continuous(breaks = seq(0, max_breaks, 1)) +
+          theme_classic() +
+      ggtitle(paste0(sum(tf_merge$total),
+                     " TFs in ",
+                     names(enrichment_list[[LIST_LEVEL]][i]),
+                     " (", ONT, ")")) +
+          theme(legend.position = "top",
+                legend.title = element_blank(),
+                axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 0, l = 0)),
+                axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0))) + # margins axis
+          xlab("Number of TF in biological processes") +
+          ylab("TF family")
+    plot(bp)
+    # plt[[LIST_LEVEL]][[i]] <- as_widget(ggplotly(bp)) # it doesn't work well with Fisher test
+    } else message(paste0("0 transcription factors found for ",
+                          names(enrichment_list[[LIST_LEVEL]][i])))
+} # end for i
+rownames(tf_all_df) <- tf_all_df[,1]
+tf_all_df[,1] <- NULL
+rownames(tf_filt_df) <- tf_filt_df[,1]
+tf_filt_df[,1] <- NULL
+
+# remove useless variables
+rm(tf_all, tf_filt, tf_merge, tf_ggdata,
+   tf_f, tf_deg, no_tf_deg, tf_total_deg,
+   tf_no_deg, no_tf_no_deg, tf_total_no_deg,
+   tf_total_f, tf_total_no_f, tf_total)
+```
+
+```{r, echo=FALSE}
+# plt
+```
+
+```{r, eval=FALSE, include=FALSE}
+# data for ShinyApp
+tf_all_df3 <- tf_all_df
+tf_all_df3$family <- rownames(tf_all_df3)
+tf_all_df3 <- melt(tf_all_df3, id.vars = "family")
+max_breaks <- max(tf_all_df3$value, na.rm = TRUE)
+tf_all_df3[is.na(tf_all_df3)] <- 0
+disp <- length(rownames(tf_all_df))
+```

@@ -1,0 +1,85 @@
+We prepare our data for GSEA analyses.
+
+```{r prepare_gsea}
+# prepare data to be analysed by GSEA
+# with Arabidopsis
+genes_list_arab_gsea <- list()
+names_arab_unique <- names(genes_list_arab)
+names_arab_unique <- gsub("_up", "", names_arab_unique)
+names_arab_unique <- gsub("_down", "", names_arab_unique)
+names_arab_unique <- unique(names_arab_unique)
+
+for (i in 1:length(names_arab_unique)) {
+  # keep up and down genes for contrast i
+  keep <- grep(names_arab_unique[i], names(genes_list_arab))
+  # merge in a data.frame
+  my_id <- as.data.frame(do.call(rbind, genes_list_arab[keep]))
+  # sort by ID and FC
+  my_id <- arrange(my_id, desc(my_id[[2]]), desc(my_id[[3]]))
+  # keep one value per ID
+  my_id <- my_id[!duplicated(my_id[[2]]), ]
+  # keep FC
+  tmp <- my_id[[3]]
+  # name vector
+  names(tmp) <- my_id[[2]]
+  # omit NA values
+  tmp <- na.omit(tmp)
+  # sort in decreasing order
+  tmp <- sort(tmp, decreasing = TRUE)
+  
+  # we save tmp if not empty
+  if (length(tmp) != 0) {
+    name <- names_arab_unique[i]
+    genes_list_arab_gsea[[name]] <- tmp
+  }
+}
+
+rm(genes_list_arab, genes_list_kgg, tmp, my_id)
+```
+
+```{r save_genes_GSEA}
+# save genes for gsea arab
+save_ids <- data.frame()
+for (i in 1:length(genes_list_arab_gsea)) {
+  tmp <- as.data.frame(names(genes_list_arab_gsea[[i]]))
+  colnames(tmp) <- "Gene_ID"
+  tmp$condition <- tmp$Gene_ID
+  tmp$condition <- gsub(".*", names(genes_list_arab_gsea[i]), tmp$condition)
+  save_ids <- rbind(save_ids, tmp)
+}
+write.table(save_ids,
+            file = paste0(SUB_DIR, "genes_for_gsea_arabidopsis.tsv"),
+            quote = FALSE,
+            sep = "\t",
+            row.names = FALSE)
+```
+
+Gene set enrichment analyse each of the three GO hierarchies.
+
+## Biological Process {.tabset .tabset-pills .tabset-fade}
+
+```{r}
+ONT <- "BP"
+```
+
+```{r GSEA-BP, child='21_GSEA-enrichment.Rmd'}
+```
+
+## Molecular Function {.tabset .tabset-pills .tabset-fade}
+
+```{r}
+ONT <- "MF"
+```
+
+```{r GSEA-MF, child='21_GSEA-enrichment.Rmd'}
+```
+
+## Cellular Component {.tabset .tabset-pills .tabset-fade}
+
+```{r}
+ONT <- "CC"
+```
+
+```{r GSEA-CC, child='21_GSEA-enrichment.Rmd'}
+```
+

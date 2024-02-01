@@ -1,0 +1,669 @@
+---
+title: "`r MY_TITLE`"
+subtitle: "Enrichment analysis with ClusterProfiler"
+author: "Amanda Bullones"
+date: "`r format(Sys.time(), '%A %d, %B %Y. %H.%M.%S')`"
+---
+
+```{r setup, include=FALSE}
+opts_chunk$set(echo = SHOW_CODE) # para mostrar el código o no
+
+# message(), warning() and stop() result in alert markdown text
+# https://www.r-bloggers.com/2017/06/pretty-errors-warnings-and-messages-in-r-markdown/
+# https://yihui.org/knitr/hooks/
+knitr::knit_hooks$set(
+   error = function(x, options) {
+     paste('\n\n<div class="alert alert-danger">',
+           gsub('##', '\n', gsub('^##\ Error', '***Error!*** ', x)),
+           '</div>', sep = '\n')
+   },
+   warning = function(x, options) {
+     paste('\n\n<div class="alert alert-warning">',
+           gsub('##', '\n', gsub('^##\ Warning:', '***Warning!*** ', x)),
+           '</div>', sep = '\n')
+   },
+   message = function(x, options) {
+     paste('\n\n<div class="alert alert-success">',
+           gsub('##', '\n', paste("***Note:*** ", "\n", x)),
+           '</div>', sep = '\n')
+   }
+)
+
+knitr::opts_chunk$set(dev = "png",
+                        dpi = DPI,
+                        echo = TRUE,
+                        cache = FALSE)
+```
+
+# Environment setup
+
+Verify which accesory files were defined by user
+
+```{r, include=FALSE}
+# check if TF_FILE and OTHER_FILE exist
+EVAL_TF <- FALSE
+EVAL_OTHER <- FALSE
+EVAL_BOTH <- FALSE
+if (exists("TF_FILE")) {
+  EVAL_TF <- TRUE
+}
+if (exists("OTHER_FILE")) {
+  EVAL_OTHER <- TRUE
+}
+if (exists("TF_FILE") && exists("OTHER_FILE")) {
+  EVAL_BOTH <- TRUE
+}
+```
+
+Load functional data for reference organism
+
+```{r}
+# organism ####
+ORG_ORIG <- paste0("ID_", ORG_ORIG)
+# organism for enrichment
+# CONSTRUIR UNA TABLA CON LAS OPCIONES A LA QUE LE PASAMOS REFERENCE_ORG
+# https://bioconductor.org/packages/release/BiocViews.html#___OrgDb
+OrgDb_custom <- data.frame("number" = 1:3,
+                           "org_name" = c("A.thaliana", "Zebrafish", "Human"),
+                           "package" = c("org.At.tair.db", "org.Dr.eg.db", "org.Hs.eg.db"),
+                           "kegg" = c("ath", "dre", "hsa"))
+ORG_ENRICH <- paste0("ID_", OrgDb_custom$org_name[REFERENCE_ORG])
+organism <- OrgDb_custom$package[REFERENCE_ORG]
+# más organismos disponibles en
+# http://bioconductor.org/packages/release/BiocViews.html#___OrgDb
+kegg_organism <- OrgDb_custom$kegg[REFERENCE_ORG]
+# más organismos disponibles en
+# https://www.genome.jp/kegg/catalog/org_list.html
+
+rm(OrgDb_custom)
+```
+
+Other configuration variables
+
+```{r}
+SEED <- 8                     # set seed for plots
+P_ADJUST_METHOD <- "none"     # p adjust method for enrichGO function
+VERBOSE <- FALSE              # show or hide GSEA messages
+TO_TYPE <- "ENTREZID"         # output ID type for KEGG analysis
+KEYTYPE_KEGG <- "ncbi-geneid" # input ID for enrichKEGG() function using ENTREZID
+```
+
+
+```{r, include=FALSE}
+# check if COMM exists in case we are analyzing communities
+COMM <- exists("COMM")
+```
+
+```{r, eval=COMM, include=COMM}
+message(paste0("We'll only keep the 3 biggest communities per cluster if they are >= ", MIN_GSSIZE))
+```
+
+```{r, include=FALSE}
+# check if MIN_SCORE exists if we are doing GSEA
+ASSIGN <- exists("MIN_SCORE")
+```
+
+```{r complete_table, eval=ASSIGN == FALSE, include=FALSE}
+# assign NA values to variables that are not defined
+MIN_SCORE <- "NA"
+MIN_GSSIZE_GSEA <- "NA"
+```
+
+```{r load_other_genes, eval=EVAL_OTHER, include=EVAL_OTHER}
+# load other genes if the file exists
+other_genes <- read.table(file = OTHER_FILE,
+                            sep = "\t",
+                            header = TRUE)
+# convert Picual IDs to Arabidopsis IDs
+other_genes_arab <- merge(x = other_genes,
+                          y = ort,
+                          by.x = 2,
+                          by.y = 1,
+                          all = FALSE)
+# keep only Arabidopsis ID
+other_genes_arab <- other_genes_arab[, 3, drop = FALSE]
+# remove isoforms
+other_genes_arab <- gsub("\\..*", "", other_genes_arab[[1]])
+# keep unique
+other_genes_arab <- sort(other_genes_arab)
+other_genes_arab <- unique(other_genes_arab)
+# remove empty
+other_genes_arab <- other_genes_arab[nzchar(other_genes_arab)]
+# set as data.frame
+other_genes_arab <- as.data.frame(other_genes_arab)
+other_genes_arab$type <- "other_genes"
+colnames(other_genes_arab)[1] <- "ID"
+```
+
+[GSEA]: "Gene Set Enrichment Analysis"
+
+# Customized variables
+
+Variable | Value
+:---     | :---
+Data file | `r FILE`
+Orthology file | `r ORTHOLOGY_FILE`
+Remove duplicated Arabidopsis IDs | `r DO_REMOVE_DUPS`
+Organism for enrichment | `r organism`
+Organism for KEGG pathways | `r kegg_organism`
+Keytype of input gene for enrichment | `r KEYTYPE`
+Adjusted pvalue cutoff for enrichment | `r P_CUTOFF`
+Method for adjuted pvalue for enrichment | `r P_ADJUST_METHOD`
+Minimal size of genes for over-enrichment | `r MIN_GSSIZE`
+Factor for enrichment representation | `r ENRICH_FACTOR`
+Minimal size of genes for GSEA | `r MIN_GSSIZE_GSEA`
+Maximal size of genes for enrichment | `r MAX_GSSIZE`
+Output id type for conversion to KEGG ids | `r TO_TYPE`
+Keytype of input gene for KEGG | `r KEYTYPE_KEGG`
+Minimun number of genes for enrichment plots | `r MIN_GENES`
+Minimun score for GSEA plots | `r MIN_SCORE`
+
+```{r remove_empty}
+# remove empty sublist from gene_list
+genes_list_no_empt <- list()
+for (i in 1:length(genes_list)) {
+  tmp <- genes_list[[i]]
+  # for data with FC values
+  if (class(tmp) == "data.frame") {
+    if (length(rownames(tmp)) > 0) {
+      name <- names(genes_list[i])
+      genes_list_no_empt[[name]] <- tmp
+    }
+    }
+  # for data with no FC values
+  if (class(tmp) == "character") {
+    if (length(tmp) > 0) {
+      name <- names(genes_list[i])
+      genes_list_no_empt[[name]] <- tmp
+  }
+  }
+}
+
+genes_list <- genes_list_no_empt
+
+f <- sapply(genes_list, summary)[1,]
+kable(f,
+      col.names = c("Number of genes"),
+      caption = "Initial list of genes")
+
+rm(genes_list_no_empt, tmp)
+```
+
+# Orthology
+
+Prepare IDs to be analised. Convert `r ORG_ORIG` identifiers in `r ORG_ENRICH` best hit.
+
+```{r ortologs, warning=FALSE, message=FALSE, fig.show = "hold", out.width = "50%"}
+# creamos una lista
+genes_list_arab <- list()
+
+# la rellenamos con los ortólogos
+for (i in 1:length(genes_list))
+{
+  temp <- merge(x = as.data.frame(genes_list[[i]]),
+                y = ort,
+                by = 1,
+                all = FALSE)
+  
+  # cambiamos el nombre de las columnas
+  colnames(temp)[1] <-  ORG_ORIG
+  colnames(temp)[which(names(temp) == names(ort))] <- ORG_ENRICH
+  
+  if (length(temp) == 3) {
+    temp <- temp[, c(1, 3, 2)]
+    colnames(temp)[3] <- "log2_FC"
+  }
+  temp[[2]] <- gsub('\\..*', "", temp[[2]]) # remove isoform
+  # save only if we found orthologs
+  check_orthologs <- !trimws(temp[[2]]) == ""
+  check_orthologs <- any(check_orthologs) 
+  if (check_orthologs == TRUE) {
+    name <- names(genes_list)[i]
+    genes_list_arab[[name]] <- temp
+  } else {
+    message(paste0("No orthologs found for ", names(genes_list)[i]))
+  }
+}
+```
+
+Remove duplicate genes between conditions if necessary.
+
+```{r check_remove}
+if (DO_REMOVE_DUPS) {
+  CR <- names(genes_list)
+  CR <- grep("up", CR)
+  CR <- !is_empty(CR)
+} else CR <- FALSE
+```
+
+```{r remove_genes, eval=CR, include=CR}
+# nos quedamos con los IDs únicos en las comparaciones
+genes_repeated <- list()
+genes_unique <- list()
+
+for (i in 1:length(allContrasts)) {
+  temp <- genes_list_arab[grep(allContrasts[i], names(genes_list_arab))]
+  if (length(temp) != 0) {
+  temp_list <- list()
+  for (j in 1:length(temp)) {
+    temp2 <- temp[[j]][[2]]
+    temp2 <- temp2[temp2 != ""] # remove empty
+    temp2 <- gsub('\\..*', "", temp2) # remove isoform
+    name <- names(temp[j])
+    temp_list[[name]] <- temp2
+  } # end for j
+  vn_plot <- venn(temp_list,
+                  ilabels = TRUE,
+                  zcolor = "style",
+                  box = FALSE)
+  title("Shared up and down genes", line = -2)
+  vn_attr <- attr(vn_plot, "intersection")
+  # genes repetidos
+  if (length(vn_attr) > 1) {
+  temp_rep <- unique(unlist(vn_attr[grep(":", names(vn_attr))]))
+  name <- names(vn_attr[grep(":", names(vn_attr))])
+  if(length(temp_rep) > 0) genes_repeated[[name]] <- temp_rep
+  }
+  # genes únicos
+  vn_names <- names(vn_attr)
+  vn_names <- vn_names[!grepl(":", vn_names)]
+  for (k in 1:length(vn_names)) {
+    temp3 <- unlist(vn_attr[grep(paste0("^", vn_names[k], "$"),
+                          names(vn_attr))],
+                    use.names = FALSE)
+    name <- vn_names[k]
+    genes_unique[[name]] <- temp3
+  } # end if
+  } # end for k
+} # end for i
+
+# rescatamos el valor de foldchange y el ID de picual
+l <- list()
+for (i in 1:length(genes_unique))
+{
+  names <- names(genes_unique[i])
+  tmp <- (genes_list_arab[grep(paste0("^", names, "$"),
+              names(genes_list_arab))])
+  tmp <- tmp[[1]]
+  tmp[[2]] <- gsub('\\..*', "", tmp[[2]]) # remove isoform
+  tmp2 <- tmp[tmp[[2]] %in% genes_unique[[i]],]
+  l[[names]] <- tmp2
+}
+genes_list_arab <- l
+```
+
+```{r change_names}
+# change names for constrasts
+names(genes_list_arab)[grep("_up", names(genes_list_arab))] <- gsub("\\.", "\\.>\\.", names(genes_list_arab)[grep("_up", names(genes_list_arab))])
+names(genes_list_arab)[grep("_down", names(genes_list_arab))] <- gsub("\\.", "\\.<\\.", names(genes_list_arab)[grep("_down", names(genes_list_arab))])
+names(genes_list_arab) <- gsub("_up", "", names(genes_list_arab))
+names(genes_list_arab) <- gsub("_down", "", names(genes_list_arab))
+```
+
+```{r save_rep_genes, eval=CR, include=CR}
+f <- sapply(genes_list_arab, summary)[1,]
+kable(f,
+      col.names = c("Number of genes"),
+      caption = "Final list of genes")
+
+# save repeated genes
+save_rg <- as.data.frame(unlist(genes_repeated))
+save_rg$condition <- rownames(save_rg)
+save_rg$condition <- gsub("down[0-9].*", "down", save_rg$condition)
+names(save_rg)[names(save_rg) == "unlist(genes_repeated)"] <- "repeated_genes"
+```
+
+Check transcription factor in the repeated genes list if necessary.
+
+```{r load_tf, eval=EVAL_TF, include=EVAL_TF}
+# load transcription factors file
+tf <- read.table(file = TF_FILE,
+                 sep = "\t",
+                 header = TRUE)
+```
+
+```{r repeated_TF, eval=(EVAL_TF && CR), include=(EVAL_TF && CR)}
+save_rg_tf <- merge(x = save_rg,
+                    y = tf,
+                    by.x = 1,
+                    by.y = 2,
+                    all.x = TRUE)
+save_rg_tf <- save_rg_tf[order(save_rg_tf$condition),]
+save_rg <- save_rg_tf
+
+# # a longer way to do it
+
+# # check if any of the repeated genes is a transcription factor
+# genes_repeated_TF <- list()
+# for (i in 1:length(genes_repeated)) {
+#   tmp <- merge(x = as.data.frame(genes_repeated[[i]]),
+#                y = tf,
+#                by.x = 1,
+#                by.y = 2,
+#                all = FALSE)
+#   # save only if we found transcription factors
+#   if (length(row.names(tmp)) > 0) {
+#     name <- names(genes_repeated)[i]
+#     genes_repeated_TF[[name]] <- tmp
+#   } else {
+#     message(paste0("No transcription factors found for ",
+#                    names(genes_repeated)[i]))
+#   }
+# }
+# 
+# # save
+# if (length(genes_repeated_TF) > 0) {
+#   save_tf <- as.data.frame(do.call(rbind, genes_repeated_TF))
+#   save_tf$condition <- rownames(save_tf)
+#   save_tf$condition <- gsub("\\.[0-9].*", "", save_tf$condition)
+#   names(save_tf)[names(save_tf) == "genes_repeated[[i]]"] <- "repeated_genes"
+#   
+#   write.table(save_tf,
+#               file = paste0(SUB_DIR,
+#                             "repeated_genes_transcription_factors.tsv"),
+#               quote = FALSE,
+#               sep = "\t",
+#               row.names = FALSE)
+# }
+```
+
+Save repeated genes IDs.
+
+```{r save_repeated, eval=CR, include=CR}
+write.table(save_rg,
+            file = paste0(SUB_DIR,
+                          "repeated_genes.tsv"),
+            sep = "\t",
+            quote = FALSE,
+            row.names = FALSE,
+            na = "")
+```
+
+Get UniProt ID for KEGG pathways analysis.
+
+```{r uniprot_id, warning=FALSE, message=FALSE}
+genes_list_kegg <- list()
+for (i in 1:length(genes_list_arab)) {
+  # get uniprot ID for KEGG analysis
+  temp <- genes_list_arab[[i]]
+  uniprot <- bitr(temp[[2]],
+                  fromType = KEYTYPE,
+                  toType = TO_TYPE,
+                  OrgDb = organism)
+  temp <- merge(x = temp,
+                y = uniprot,
+                by.x = 2,
+                by.y = 1,
+                all = TRUE)
+  
+  if (length(temp) == 4) {
+    temp <- temp[, c(2, 1, 4, 3)]
+    temp_kegg <- temp[, c(1, 3, 4)]
+    temp_kegg <- na.omit(temp_kegg)
+  } else {
+    temp <- temp[, c(2, 1, 3)]
+    temp_kegg <- temp[, c(1, 3)]
+    temp_kegg <- na.omit(temp_kegg)
+  }
+  # las guardamos en una lista
+  name <- names(genes_list_arab)[i]
+  genes_list_kegg[[name]] <-  temp_kegg
+}
+
+# eliminamos variables innecesarias
+rm(genes_list, temp, temp_kegg, ort, uniprot)
+```
+
+Prepare a list for enrichment analysis.
+
+```{r enrichment_list}
+# create a list to save enrichment results
+enrichment_list <- list()
+# create a list to save enrichment TF analysis
+enrichment_TF <- list()
+# vector to save number genes
+number_genes_enrichment <- list()
+```
+
+# Gene Ontology Enrichment
+
+Over-representation analysis is a statistical method that determines whether genes from pre-defined sets are present more than would be expected in a subset of the data (DEP proteins in this case).
+
+More info available at <https://learn.gencore.bio.nyu.edu/rna-seq-analysis/over-representation-analysis/>
+
+Save the genes IDs that we are gonna use for the over-enrichment analyses.
+
+```{r save_genes_OE}
+# save genes for over-enrichment arab
+save_ids <- as.data.frame(do.call(rbind, genes_list_arab))
+save_ids$condition <- rownames(save_ids)
+save_ids$condition <- gsub("\\.[0-9].*", "", save_ids$condition)
+write.table(save_ids,
+            file = paste0(SUB_DIR, "genes_for_overenrichment_arabidopsis.tsv"),
+            quote = FALSE,
+            sep = "\t",
+            row.names = FALSE)
+# save genes for over-enrichment kegg
+save_ids <- as.data.frame(do.call(rbind, genes_list_kegg))
+save_ids$condition <- rownames(save_ids)
+save_ids$condition <- gsub("\\.[0-9].*", "", save_ids$condition)
+write.table(save_ids,
+            file = paste0(SUB_DIR, "genes_for_overenrichment_kegg.tsv"),
+            quote = FALSE,
+            sep = "\t",
+            row.names = FALSE)
+rm(save_ids)
+```
+
+Analyse each of the three GO hierarchies.
+
+## Biological Process {.tabset .tabset-pills .tabset-fade}
+
+```{r}
+ONT <- "BP"
+```
+
+```{r GO-BP, child='Rmd/10_GO-enrichment.Rmd'}
+```
+
+## Molecular Function {.tabset .tabset-pills .tabset-fade}
+
+```{r}
+ONT <- "MF"
+```
+
+```{r GO-MF, child='Rmd/10_GO-enrichment.Rmd'}
+```
+
+## Cellular Component {.tabset .tabset-pills .tabset-fade}
+
+```{r}
+ONT <- "CC"
+```
+
+```{r GO-CC, child='Rmd/10_GO-enrichment.Rmd'}
+```
+
+# KEGG pathways enrichment {.tabset .tabset-pills .tabset-fade}
+
+KEGG pathways enrichment calculations
+
+```{r over_representation_KEGG, warning=FALSE, message=FALSE}
+enrichment_list[["kegg"]] <- list()
+number_genes_enrichment[["kegg"]] <- list()
+
+for (i in 1:length(genes_list_kegg)) {
+  temp <- enrichKEGG(gene = genes_list_kegg[[i]]$ENTREZID,
+                     organism = kegg_organism,
+                     keyType = KEYTYPE_KEGG,
+                     pvalueCutoff = P_CUTOFF,
+                     pAdjustMethod = P_ADJUST_METHOD,
+                     minGSSize = MIN_GSSIZE,
+                     maxGSSize = MAX_GSSIZE)
+  
+  # comprobamos si hay enriquecimiento
+  empty <- length(temp$ID) == 0
+
+  # si está vacío, no lo guardamos en la lista
+  if (empty == FALSE)
+  {
+    # guardamos los valores en una lista
+    name <- names(genes_list_kegg)[i]
+    enrichment_list$`kegg`[[name]] <- temp
+    # save number of genes analysed in a vector
+    number_genes_enrichment$`kegg`[[name]] <- length(genes_list_kegg[[i]]$ENTREZID)
+  } else {
+    print(paste0("0 KEGG pathways found for ", names(genes_list_kegg)[i]))
+  }
+}
+
+# eliminamos variables innecesarias
+rm(temp)
+```
+
+Remove empty list elements, if any.
+
+```{r}
+#remove empty list(s) before plot
+length_loop <- length(enrichment_list)
+for (i in 1:length_loop) {
+  if (length(enrichment_list[[i]]) == 0) {
+    enrichment_list[[i]] <- NULL
+    length_loop <- length_loop - 1
+    }
+}
+```
+
+Check if there was any KEGG pathways enrichment.
+
+```{r check_KEGG}
+check_KEGG <- grep("kegg", names(enrichment_list))
+check_KEGG <- !is_empty(check_KEGG)
+```
+
+## Dotplot
+
+```{r dotplots_KEGG, eval=check_KEGG, include=check_KEGG, fig.show = "hold", out.width = "50%", fig.height=5, fig.width=5}
+for (i in 1:length(enrichment_list$`kegg`)) {
+  tmp <- enrichment_list$`kegg`[[i]]
+  MIN_GENES <- trunc(number_genes_enrichment$`kegg`[[i]]/ENRICH_FACTOR)
+  if (MIN_GENES == 0) {
+    MIN_GENES <- 1
+  } # end if
+  tmp2 <- tmp$Count >= MIN_GENES
+  # if no process passes the filter, we skip the plots
+  if (!any(tmp2)) {
+    next
+  } # end if
+  tmp <- tmp[tmp2]$Description
+  
+  # dotplot
+  set.seed(SEED)
+  p_dp <- dotplot(enrichment_list$`kegg`[[i]],
+                    showCategory = tmp, # seleccionamos cuántos procesos
+                    font.size = 6,
+                    label_format = 80) + # sets wrap length
+      ggtitle(paste0(names(enrichment_list$`kegg`[i]), ": enriched KEGGs")) +
+      theme(plot.title = element_text(hjust = 0.9))
+    
+    print(p_dp)
+}
+```
+
+## Network
+
+```{r networks_KEGG, eval=check_KEGG, include=check_KEGG, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
+network_plots[["kegg"]] <- list()
+for (i in 1:length(enrichment_list$`kegg`)) {
+  tmp <- enrichment_list$`kegg`[[i]]
+  MIN_GENES <- trunc(number_genes_enrichment$`kegg`[[i]]/ENRICH_FACTOR)
+  if (MIN_GENES == 0) {
+    MIN_GENES <- 1
+  } # end if
+  tmp2 <- tmp$Count >= MIN_GENES
+  # if no process passes the filter, we skip the plots
+  if (!any(tmp2)) {
+    next
+  } # end if
+  tmp <- tmp[tmp2]$Description
+  
+  # network
+  set.seed(SEED)
+  p_nt <- emapplot(pairwise_termsim(enrichment_list$`kegg`[[i]]),
+                     showCategory = length(tmp), # seleccionamos cuántos procesos
+                     # cex_label_category = 0.5, # tamaño etiquetas nodos
+                     node_label = "none") + # quitar etiquetas 
+            ggtitle(paste0(names(enrichment_list$`kegg`[i]), ": enriched KEGGs"))
+    
+    print(p_nt)
+    
+    network_plots$kegg[[names(enrichment_list$`kegg`[i])]] <- p_nt
+}
+```
+
+## Interactive network
+
+```{r interactive_kegg, eval=check_KEGG, include=check_KEGG, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
+plt <- htmltools::tagList()
+plt[["kegg"]] <- htmltools::tagList()
+
+if (length(network_plots$`kegg`) != 0) {
+for (i in 1:length(network_plots$`kegg`)) {
+  set.seed(SEED)
+  p_nt_int <- ggplot(network_plots$`kegg`[[i]]$data,
+                       aes(x = x, y = y, name = name)) +
+      geom_point(aes(color = "#0099f9"), size = 2) +
+    # scale_color_manual(values = unlist(ggcolors[["kegg"]][[i]]),
+    #                    limits = force) + # define colors
+    theme(legend.position = "none") +
+      ggtitle(paste0(names(network_plots$`kegg`[i]), ": enriched KEGGs"))
+    plt$`kegg`[[i]] <- as_widget(ggplotly(p_nt_int,
+                                          height = 600,
+                                          width = 600))
+}
+}
+```
+
+```{r, eval=check_KEGG, include=check_KEGG, echo=FALSE, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
+if (length(network_plots$`kegg`) != 0) {
+  plt
+}
+```
+
+# Save data
+
+```{r save_enrichment}
+# save tables
+for(i in 1:length(enrichment_list)) {
+  for(j in 1:length(enrichment_list[[i]])) {
+    write.table(enrichment_list[[i]][[j]],
+                file = paste0(SUB_DIR, names(enrichment_list[i]), "_", names(enrichment_list[[i]][j]), ".tsv"),
+                quote = FALSE,
+                sep = "\t",
+                row.names = FALSE,
+                na = "")
+  }
+}
+
+# save enrichment_list as R object
+saveRDS(enrichment_list,
+        file = paste0(SUB_DIR, "enrichment_list.Rds"))
+
+message(paste0("Data was succesfully saved at ", SUB_DIR))
+```
+
+# About this session
+
+```{r tiempo_total, results='hold', echo=FALSE}
+# total time is current proc.time minus initial time (T00)
+T_total <- proc.time() - T00
+```
+
+Elapsed time: **`r round(T_total[[3]]/60, digits = 2)` min**.
+
+```{r sessionInfo, results='hold', echo=FALSE}
+cat("Variables in memory:\n")
+ls()
+cat("\n")
+sessionInfo()
+```
