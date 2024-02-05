@@ -253,7 +253,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
 plt <- htmltools::tagList()
 plt[[LIST_LEVEL]] <- htmltools::tagList()
 
-if (exists("ggcolors") == TRUE) {
+if (exists("ggcolors")) {
   # legend_colors <- c("Transcription factors" = "orange",
   #                    "Genes of interest" = "purple",
   #                    "Both categories" = "yellow",
@@ -286,15 +286,17 @@ for (i in 1:length(network_plots[[LIST_LEVEL]])) {
                                           width = 600))
 }
 } else {
-  set.seed(SEED)
-  p_nt_int <- ggplot(network_plots[[LIST_LEVEL]][[i]]$data,
+  for (i in 1:length(network_plots[[LIST_LEVEL]])) {
+    set.seed(SEED)
+    p_nt_int <- ggplot(network_plots[[LIST_LEVEL]][[i]]$data,
                        aes(x = x, y = y, name = name)) +
-      geom_point(aes(color = name), size = 2) +
-    theme(legend.position = "none") +
+      geom_point(aes(color = "red"), size = 2) +
+      theme(legend.position = "none") +
       ggtitle(paste0(names(network_plots[[LIST_LEVEL]][i]), " enriched GOs (", ONT, ")"))
     plt[[LIST_LEVEL]][[i]] <- as_widget(ggplotly(p_nt_int,
-                                          height = 600,
-                                          width = 600))
+                                                 height = 600,
+                                                 width = 600))
+  }
 }
 ```
 
