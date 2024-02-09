@@ -2,7 +2,6 @@
 
 Check transcription factor in the enrichment list if necessary.
 Represent the TF families found with a barplot.
-We'll add an "*" to the barplot if the Fisher's test is sifnificative (p-value <= `r P_FISHER`).
 
 Tutorial for applying Fisher's test:
 <https://statsandr.com/blog/fisher-s-exact-test-in-r-independence-test-for-a-small-sample/>
