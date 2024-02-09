@@ -1,7 +1,7 @@
 ---
 title: "`r MY_TITLE`"
-subtitle: "Enrichment analysis with ClusterProfiler"
-author: "Amanda Bullones"
+subtitle: "FunRichR"
+author: "Amanda Bullones and M. Gonzalo Claros"
 date: "`r format(Sys.time(), '%A %d, %B %Y. %H.%M.%S')`"
 ---
 
@@ -55,37 +55,19 @@ if (exists("TF_FILE") && exists("OTHER_FILE")) {
 }
 ```
 
-Load functional data for reference organism
-
-```{r}
-# organism ####
-ORG_ORIG <- paste0("ID_", ORG_ORIG)
-# organism for enrichment
-# CONSTRUIR UNA TABLA CON LAS OPCIONES A LA QUE LE PASAMOS REFERENCE_ORG
-# https://bioconductor.org/packages/release/BiocViews.html#___OrgDb
-OrgDb_custom <- data.frame("number" = 1:3,
-                           "org_name" = c("A.thaliana", "Zebrafish", "Human"),
-                           "package" = c("org.At.tair.db", "org.Dr.eg.db", "org.Hs.eg.db"),
-                           "kegg" = c("ath", "dre", "hsa"))
-ORG_ENRICH <- paste0("ID_", OrgDb_custom$org_name[REFERENCE_ORG])
-organism <- OrgDb_custom$package[REFERENCE_ORG]
-# más organismos disponibles en
-# http://bioconductor.org/packages/release/BiocViews.html#___OrgDb
-kegg_organism <- OrgDb_custom$kegg[REFERENCE_ORG]
-# más organismos disponibles en
-# https://www.genome.jp/kegg/catalog/org_list.html
-
-rm(OrgDb_custom)
-```
-
 Other configuration variables
 
 ```{r}
 SEED <- 8                     # set seed for plots
 P_ADJUST_METHOD <- "none"     # p adjust method for enrichGO function
+MIN_GSSIZE <- 10              # minimal size of genes annotated for testing
+MIN_GSSIZE_GSEA <- 10         # minimal size of genes annotated for GSEA testing
+MAX_GSSIZE <- 500             # maximal size of genes annotated for testing
 VERBOSE <- FALSE              # show or hide GSEA messages
 TO_TYPE <- "ENTREZID"         # output ID type for KEGG analysis
 KEYTYPE_KEGG <- "ncbi-geneid" # input ID for enrichKEGG() function using ENTREZID
+N_PERM <- 1000                # number of permutations for preliminary estimation of P-values
+MIN_SCORE <- 0.4              # minimum score for GSEA representation
 ```
 
 
@@ -155,7 +137,6 @@ Minimal size of genes for GSEA | `r MIN_GSSIZE_GSEA`
 Maximal size of genes for enrichment | `r MAX_GSSIZE`
 Output id type for conversion to KEGG ids | `r TO_TYPE`
 Keytype of input gene for KEGG | `r KEYTYPE_KEGG`
-Minimun number of genes for enrichment plots | `r MIN_GENES`
 Minimun score for GSEA plots | `r MIN_SCORE`
 
 ```{r remove_empty}
