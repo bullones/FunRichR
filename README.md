@@ -39,6 +39,12 @@ The GitHub repository and your local version will contain the following files an
 
 ***
 
+## TF file (optional)
+
+You can download the TF file in <http://planttfdb.gao-lab.org/>.
+
+***
+
 ## Output files
 
 ***
