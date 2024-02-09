@@ -1,4 +1,4 @@
-#libraries for enrichment script
+#libraries -> FunRichR
 
 # already installed packages ####
 installed_libs <- rownames(installed.packages())
@@ -9,7 +9,7 @@ installed_libs <- rownames(installed.packages())
 
 ## listing packages as vectors ####
 writeLines("\n*** Checking CRAN libraries that must be installed ***")
-from_CRAN <- c("ggplot2", "tidyverse", "dplyr", "data.table", "ggvenn", "rmarkdown", "knitr", "plotly", "venn", "tm", "wordcloud", "shiny", "factoextra", "cluster", "dynamicTreeCut")
+from_CRAN <- c("ggplot2", "igraph", "tidyverse", "tidygraph", "dplyr", "data.table", "ggvenn", "rmarkdown", "knitr", "plotly", "venn", "tm", "wordcloud", "shiny", "factoextra", "cluster", "dynamicTreeCut", "devtools")
 
 ## obtain libraries that must be installed ####
 new_libs_CRAN <- from_CRAN[!(from_CRAN %in% installed_libs)]
