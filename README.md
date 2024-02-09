@@ -49,7 +49,7 @@ You can download the TF file in <http://planttfdb.gao-lab.org/>.
 
 ***
 
-## Aditional information
+## Fixing bugs
 
 If you are executing FunRichR on a Windows or macOS system, please re-install _ggtree_ and _ggtreeExtra_ packages using BiocManager because their binaries were built with old _tidytree_.
 
@@ -57,6 +57,44 @@ If you are executing FunRichR on a Windows or macOS system, please re-install _g
 > BiocManager::install("ggtree", force=T, type = 'source')
 > BiocManager::install("ggtreeExtra", force=T, type = 'source')
 ```
+
+The package _venn_ has some issues on version 1.12, as well as _igraph_ on version 2.0.1, and _tidygraph_ on version 1.3.1. You can check which version you have installed with:
+
+```R
+> packageVersion("package")
+```
+
+ If you experience some issues with those packages, please manually downgrade:
+
+```R
+> library(devtools)
+> install_version("venn", version = "1.11", repos = "http://cran.r-project.org")
+> install_version("igraph", version = "1.5.1", repos = "http://cran.r-project.org")
+> install_version("tidygraph", version = "1.2.3", repos = "http://cran.r-project.org")
+```
+
+If you experience issues with another CRAN package, you can try to uninstall it:
+
+```R
+> remove.packages("package-to-remove")
+```
+
+and reinstall it either by launching _FunRichR_ again or by:
+
+```R
+>install.packages("package-to-install")
+```
+
+### Possible compilation errors in Ubuntu
+
+If you are using an Ubuntu system, it is highly recomendable that you execute:
+
+```bash
+$ sudo apt-get install libblas-dev liblapack-dev libarpack2-dev gfortran libnlopt-dev libxml2-dev libpoppler-cpp-dev cmake libzmq3-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev build-essential libcurl4-openssl-dev libxml2-dev libssl-dev libfontconfig1-dev libgmp-dev
+```
+
+in order to install possible missing tools that Ubuntu requires to compile R sucessfully.
+
 
 ***
 
