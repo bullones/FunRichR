@@ -527,10 +527,12 @@ check_KEGG <- !is_empty(check_KEGG)
 ```{r dotplots_KEGG, eval=check_KEGG, include=check_KEGG, fig.show = "hold", out.width = "50%", fig.height=5, fig.width=5}
 for (i in 1:length(enrichment_list$`kegg`)) {
   tmp <- enrichment_list$`kegg`[[i]]
-  MIN_GENES <- trunc(number_genes_enrichment$`kegg`[[i]]/ENRICH_FACTOR)
-  if (MIN_GENES == 0) {
-    MIN_GENES <- 1
-  } # end if
+  # force MIN_GENES = 1 for KEGG plots
+  MIN_GENES <- 1
+  # MIN_GENES <- trunc(number_genes_enrichment$`kegg`[[i]]/ENRICH_FACTOR)
+  # if (MIN_GENES == 0) {
+  #   MIN_GENES <- 1
+  # } # end if
   tmp2 <- tmp$Count >= MIN_GENES
   # if no process passes the filter, we skip the plots
   if (!any(tmp2)) {
@@ -557,10 +559,12 @@ for (i in 1:length(enrichment_list$`kegg`)) {
 network_plots[["kegg"]] <- list()
 for (i in 1:length(enrichment_list$`kegg`)) {
   tmp <- enrichment_list$`kegg`[[i]]
-  MIN_GENES <- trunc(number_genes_enrichment$`kegg`[[i]]/ENRICH_FACTOR)
-  if (MIN_GENES == 0) {
-    MIN_GENES <- 1
-  } # end if
+  # force MIN_GENES = 1 for KEGG plots
+  MIN_GENES <- 1
+  # MIN_GENES <- trunc(number_genes_enrichment$`kegg`[[i]]/ENRICH_FACTOR)
+  # if (MIN_GENES == 0) {
+  #   MIN_GENES <- 1
+  # } # end if
   tmp2 <- tmp$Count >= MIN_GENES
   # if no process passes the filter, we skip the plots
   if (!any(tmp2)) {
