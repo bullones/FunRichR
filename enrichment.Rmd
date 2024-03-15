@@ -37,7 +37,7 @@ knitr::opts_chunk$set(dev = "png",
 
 # Environment setup
 
-Verify which accesory files were defined by user
+Verify which accessory files were defined by user.
 
 ```{r, include=FALSE}
 # check if TF_FILE and OTHER_FILE exist
@@ -89,6 +89,11 @@ ASSIGN <- exists("MIN_SCORE")
 # assign NA values to variables that are not defined
 MIN_SCORE <- "NA"
 MIN_GSSIZE_GSEA <- "NA"
+```
+
+# Load files
+
+```{r load, child='Rmd/00_Load_files.Rmd'}
 ```
 
 ```{r load_other_genes, eval=EVAL_OTHER, include=EVAL_OTHER}
