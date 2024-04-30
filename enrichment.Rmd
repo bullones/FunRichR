@@ -129,7 +129,7 @@ colnames(other_genes_arab)[1] <- "ID"
 Variable | Value
 :---     | :---
 Data file | `r FILE`
-Orthology file | `r ORTHOLOGY_FILE`
+<!-- Orthology file | `ORTHOLOGY_FILE` --> # FIX IT WHEN WE HAVE NO ORTHOLOGY
 Remove duplicated Arabidopsis IDs | `r DO_REMOVE_DUPS`
 Organism for enrichment | `r organism`
 Organism for KEGG pathways | `r kegg_organism`
@@ -175,11 +175,11 @@ kable(f,
 rm(genes_list_no_empt, tmp)
 ```
 
-# Orthology
+# Orthology (if needed)
 
 Prepare IDs to be analised. Convert `r ORG_ORIG` identifiers in `r ORG_ENRICH` best hit.
 
-```{r ortologs, warning=FALSE, message=FALSE, fig.show = "hold", out.width = "50%"}
+```{r ortologs, eval=MODEL_REFERENCE==FALSE, include=MODEL_REFERENCE==FALSE, warning=FALSE, message=FALSE, fig.show = "hold", out.width = "50%"}
 # creamos una lista
 genes_list_arab <- list()
 
@@ -199,7 +199,7 @@ for (i in 1:length(genes_list))
     temp <- temp[, c(1, 3, 2)]
     colnames(temp)[3] <- "log2_FC"
   }
-  temp[[2]] <- gsub('\\..*', "", temp[[2]]) # remove isoform
+  temp[[2]] <- gsub('\\.[0-9]', "", temp[[2]]) # remove isoform
   # save only if we found orthologs
   check_orthologs <- !trimws(temp[[2]]) == ""
   check_orthologs <- any(check_orthologs) 
@@ -209,6 +209,16 @@ for (i in 1:length(genes_list))
   } else {
     message(paste0("No orthologs found for ", names(genes_list)[i]))
   }
+}
+```
+
+```{r, eval=is.numeric(MODEL_REFERENCE), include=is.numeric(MODEL_REFERENCE)}
+# If we didn't do the orthology, we will rename the variable
+genes_list_arab <- genes_list
+# and we will remove the isoforms for the clusterprofiler
+for (i in 1:length(genes_list_arab))
+{
+  genes_list_arab[[i]][[1]] <- gsub('\\.[0-9]', "", genes_list_arab[[i]][[1]]) # remove isoform
 }
 ```
 
@@ -372,13 +382,18 @@ genes_list_kegg <- list()
 for (i in 1:length(genes_list_arab)) {
   # get uniprot ID for KEGG analysis
   temp <- genes_list_arab[[i]]
-  uniprot <- bitr(temp[[2]],
+  if (ncol(temp)==1) {
+    col <- 1
+  } else  {
+    col <- 2
+  }
+  uniprot <- bitr(temp[[col]],
                   fromType = KEYTYPE,
                   toType = TO_TYPE,
                   OrgDb = organism)
   temp <- merge(x = temp,
                 y = uniprot,
-                by.x = 2,
+                by.x = col,
                 by.y = 1,
                 all = TRUE)
   
@@ -386,10 +401,12 @@ for (i in 1:length(genes_list_arab)) {
     temp <- temp[, c(2, 1, 4, 3)]
     temp_kegg <- temp[, c(1, 3, 4)]
     temp_kegg <- na.omit(temp_kegg)
-  } else {
+  } else if (length(temp) == 3) {
     temp <- temp[, c(2, 1, 3)]
     temp_kegg <- temp[, c(1, 3)]
     temp_kegg <- na.omit(temp_kegg)
+  } else {
+    temp_kegg <- na.omit(temp)
   }
   # las guardamos en una lista
   name <- names(genes_list_arab)[i]

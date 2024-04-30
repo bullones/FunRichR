@@ -1,12 +1,8 @@
-```{r load_files}
+```{r load_genes}
 # load data ####
 genes <- read.table(file = paste0(WD_DIR, FILE),
                     sep = "\t",
                     header = TRUE)
-
-ort <- read.table(file = ORTHOLOGY_FILE,
-                  sep = "\t",
-                  header = TRUE)
 ```
 
 ```{r format_1, eval=EXPERIMENT==1, include=EXPERIMENT==1}
@@ -83,3 +79,20 @@ for (i in 1:length(allContrasts))
 }
 rm(genes, tmp)
 ```
+
+```{r format_3, eval=EXPERIMENT==3, include=EXPERIMENT==3}
+# AÑADIR OPCIÓN
+```
+
+```{r format_4, eval=EXPERIMENT==4, include=EXPERIMENT==4}
+# format the data ####
+genes_list <- list()
+genes_list[["1"]] <- genes
+```
+
+```{r load_ort, eval=exists("ORTHOLOGY_FILE") , include=exists("ORTHOLOGY_FILE")}
+ort <- read.table(file = ORTHOLOGY_FILE,
+                  sep = "\t",
+                  header = TRUE)
+```
+

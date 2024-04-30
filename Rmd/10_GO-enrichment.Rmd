@@ -8,7 +8,12 @@ number_genes_enrichment[[LIST_LEVEL]] <- list()
 # fill the sublist with over-enrichment results
 for (i in 1:length(genes_list_arab))
 {
-  temp <- enrichGO(gene = genes_list_arab[[i]][[2]],
+  if (ncol(genes_list_arab[[1]])==1) {
+    col <- 1
+  } else {
+    col <- 2
+  }
+  temp <- enrichGO(gene = genes_list_arab[[i]][[col]],
                    OrgDb = organism,
                    keyType = KEYTYPE,
                    ont = ONT,
@@ -30,7 +35,7 @@ for (i in 1:length(genes_list_arab))
     name <- names(genes_list_arab)[i]
     enrichment_list[[LIST_LEVEL]][[name]] <- temp
     # save number of genes analysed in a vector
-    number_genes_enrichment[[LIST_LEVEL]][[name]] <- length(genes_list_arab[[i]][[2]])
+    number_genes_enrichment[[LIST_LEVEL]][[name]] <- length(genes_list_arab[[i]][[col]])
   } else {
     message(paste0("0 enrichment terms found for ", names(genes_list_arab)[i]))
   }
@@ -446,9 +451,9 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
 }
 ```
 
-### Convert IDs Arabidopsis to original organism and save
+### Convert IDs Arabidopsis to original organism and save (if the orthology was performed)
 
-```{r}
+```{r, eval=MODEL_REFERENCE==FALSE, include=MODEL_REFERENCE==FALSE}
 # create dataframe to save data
 enriched_genes <- list()
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {

@@ -9,7 +9,7 @@ Explicación de lo que hace el script.
 You will need a local copy of the GitHub _FunRichR_ repository on your machine. It can be done using git in the shell:
 
 ```bash
-$ git clone git@github.com:bullones/FunRichR.git
+git clone git@github.com:bullones/FunRichR.git
 ```
 
 Alternatively, you can go to <https://github.com/bullones/FunRichR/> and click on _Code_ button and then _Clone_, or select _Download ZIP_ or any other possibility you prefer. The cloned of unzipped directory `FunRichR` should be placed somewhere on your `$HOME` in Linux, macOS and Windows.
