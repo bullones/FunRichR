@@ -81,13 +81,21 @@ rm(genes, tmp)
 ```
 
 ```{r format_3, eval=EXPERIMENT==3, include=EXPERIMENT==3}
-# AÑADIR OPCIÓN
+# format the data ####
+allContrasts <- paste0(FIRST_COND, ".", SECOND_COND)
+genes_list <- list()
+tmp_up <- genes[genes[COLFC] > 0, ]
+tmp_down <- genes[genes[COLFC] < 0, ]
+genes_list[[paste0(allContrasts, "_up")]] <- tmp_up[, 1]
+genes_list[[paste0(allContrasts, "_down")]] <- tmp_down[, 1]
+rm(genes, tmp_up, tmp_down)
 ```
 
 ```{r format_4, eval=EXPERIMENT==4, include=EXPERIMENT==4}
 # format the data ####
 genes_list <- list()
 genes_list[["1"]] <- genes
+rm(genes)
 ```
 
 ```{r load_ort, eval=exists("ORTHOLOGY_FILE") , include=exists("ORTHOLOGY_FILE")}

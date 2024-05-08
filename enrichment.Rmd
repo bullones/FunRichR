@@ -83,6 +83,10 @@ message(paste0("We'll only keep the 3 biggest communities per cluster if they ar
 ```{r, include=FALSE}
 # check if MIN_SCORE exists if we are doing GSEA
 ASSIGN <- exists("MIN_SCORE")
+# complete table when we don't use orthology file
+if (!exists("ORTHOLOGY_FILE")){
+  ORTHOLOGY_FILE <- "NA"
+}
 ```
 
 ```{r complete_table, eval=ASSIGN == FALSE, include=FALSE}
@@ -129,7 +133,7 @@ colnames(other_genes_arab)[1] <- "ID"
 Variable | Value
 :---     | :---
 Data file | `r FILE`
-<!-- Orthology file | `ORTHOLOGY_FILE` --> # FIX IT WHEN WE HAVE NO ORTHOLOGY
+Orthology file | `ORTHOLOGY_FILE`
 Remove duplicated Arabidopsis IDs | `r DO_REMOVE_DUPS`
 Organism for enrichment | `r organism`
 Organism for KEGG pathways | `r kegg_organism`
@@ -249,7 +253,7 @@ for (i in 1:length(allContrasts)) {
     temp_list[[name]] <- temp2
   } # end for j
   vn_plot <- venn(temp_list,
-                  ilabels = TRUE,
+                  ilabels = "counts",
                   zcolor = "style",
                   box = FALSE)
   title("Shared up and down genes", line = -2)

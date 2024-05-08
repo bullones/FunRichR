@@ -56,7 +56,7 @@ MY_TITLE = "Enrichment results for DEGs 'Koroneiki' control vs drought14d CPM = 
 #   SOURCE_DIR = "~/usr/local/mycodingfiles/"
 # A final "/" in path is compulsory
 
-SOURCE_DIR = "/media/bullones/BACKUP/biolivo/Bioinformatica/Script/Script_R/FunRichR/"
+SOURCE_DIR = "~/datos_bullones/Bioinformatica/Script/Script_R/FunRichR/"
 # ///////////////////////////////////////////////////////
 
 
@@ -109,7 +109,7 @@ REFERENCE_ORG = 1
 #   WD_DIR = "~/Documents/My_MA_data/this_experiment/"
 # A final "/" in path is compulsory
 
-WD_DIR = "/media/bullones/BACKUP/biolivo/Bioinformatica/sequia_olivo_ana/data_26_1_23_both/new_analysis_06-11-23/RSeqFlow1.02_results_2024-01-11_12.52.04_koroneiki_cpm0_fc1.2_p0.05/"
+WD_DIR = "~/datos_bullones/Bioinformatica/sequia_olivo_ana/data_26_1_23_both/new_analysis_06-11-23/RSeqFlow1.02_results_2024-01-11_12.52.04_koroneiki_cpm0_fc1.2_p0.05/"
 # //////////////////////////////////////
 
 
@@ -134,6 +134,13 @@ FILE = "AllGenes_allContrast_TREAT-P-0.05_FC-1.2_2024-01-11_12.52.04.tsv"
 #   EXPERIMENT = 1
 
 EXPERIMENT = 1
+
+# if your experiment is type 3, uncomment next lines
+# second condition
+FIRST_COND = "AS"
+SECOND_COND = "TS"
+# number of column with the Fold Change information
+COLFC = 3
 # /////////////////////////
 
 
@@ -146,7 +153,7 @@ EXPERIMENT = 1
 # Example:
 #   ORTHOLOGY_FILE = "~/Documents/orthology.tsv"
 
-ORTHOLOGY_FILE = "/media/bullones/BACKUP/biolivo/Bioinformatica/ortologia/picual-arabidopsis_new_ort/picual-tair10/results/best_hit_two-way_picual_tair10.tsv"
+ORTHOLOGY_FILE = "~/datos_bullones/Bioinformatica/ortologia/picual-arabidopsis_new_ort/picual-tair10/results/best_hit_two-way_picual_tair10.tsv"
 
 # In case your study organism is not a model organism, uncomment REFERENCE_COLUMN and specify the column to read with the reference organism
 # Example:
@@ -175,7 +182,7 @@ KEYTYPE = "TAIR"
 # Example:
 #   TF_FILE = "~/Documents/tf_file.tsv"
 
-TF_FILE = "/media/bullones/BACKUP/biolivo/Bioinformatica/RNA_Seq/muestras_picual_Juande/Olivo4Plants/TF/Ath_TF_list.txt"
+TF_FILE = "~/datos_bullones/Bioinformatica/RNA_Seq/muestras_picual_Juande/Olivo4Plants/TF/Ath_TF_list.txt"
 # /////////////////////////////////////////////
 
 
@@ -191,7 +198,7 @@ TF_FILE = "/media/bullones/BACKUP/biolivo/Bioinformatica/RNA_Seq/muestras_picual
 # Example:
 #   OTHER_FILE = "~/Documents/important_genes.tsv"
 
-# OTHER_FILE = "/media/bullones/BACKUP/biolivo/Bioinformatica/sequia_olivo_ana/data_26_1_23_both/new_analysis_06-11-23/RSeqFlow1.02_results_2024-01-11_12.52.04_koroneiki_cpm0_fc1.2_p0.05/OutstandingGenes-2024-01-11_12.52.04.tsv"
+# OTHER_FILE = "~/datos_bullones/Bioinformatica/sequia_olivo_ana/data_26_1_23_both/new_analysis_06-11-23/RSeqFlow1.02_results_2024-01-11_12.52.04_koroneiki_cpm0_fc1.2_p0.05/OutstandingGenes-2024-01-11_12.52.04.tsv"
 # //////////////////////////
 
 
