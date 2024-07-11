@@ -133,7 +133,7 @@ colnames(other_genes_arab)[1] <- "ID"
 Variable | Value
 :---     | :---
 Data file | `r FILE`
-Orthology file | `ORTHOLOGY_FILE`
+Orthology file | `r ORTHOLOGY_FILE`
 Remove duplicated Arabidopsis IDs | `r DO_REMOVE_DUPS`
 Organism for enrichment | `r organism`
 Organism for KEGG pathways | `r kegg_organism`
