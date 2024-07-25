@@ -147,9 +147,9 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
     MIN_GENES <- 1
   } # end if
   tmp2 <- tmp$Count >= MIN_GENES
-  # if no process passes the filter, we skip the plots
+  # if no process passes the filter, we plot all of them
   if (!any(tmp2)) {
-    next
+    tmp2 <- tmp$Count >= 0
   } # end if
   tmp <- tmp[tmp2]$Description
   
@@ -181,9 +181,9 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
     MIN_GENES <- 1
   } # end if
   tmp2 <- tmp$Count >= MIN_GENES
-  # if no process passes the filter, we skip the plots
+  # if no process passes the filter, we plot all of them
   if (!any(tmp2)) {
-    next
+    tmp2 <- tmp$Count >= 0
   } # end if
   enrichment_filt <- tmp[tmp2]
   tmp <- enrichment_filt$Description
@@ -232,9 +232,9 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
     MIN_GENES <- 1
   } # end if
   tmp2 <- tmp$Count >= MIN_GENES
-  # if no process passes the filter, we skip the plots
+  # if no process passes the filter, we plot all of them
   if (!any(tmp2)) {
-    next
+    tmp2 <- tmp$Count >= 0
   } # end if
   tmp <- tmp[tmp2]$Description
   
@@ -451,9 +451,8 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
 }
 ```
 
-### Convert IDs Arabidopsis to original organism and save (if the orthology was performed)
-
 ```{r, eval=MODEL_REFERENCE==FALSE, include=MODEL_REFERENCE==FALSE}
+# Convert IDs Arabidopsis to original organism and save (if the orthology was performed)
 # create dataframe to save data
 enriched_genes <- list()
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
