@@ -151,6 +151,10 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   if (!any(tmp2)) {
     tmp2 <- tmp$Count >= 0
   } # end if
+  # check if we have any process. If not, skip
+  if (!any(tmp2)) {
+    next
+  } # end if
   tmp <- tmp[tmp2]$Description
   
   # dotplot
@@ -184,6 +188,10 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   # if no process passes the filter, we plot all of them
   if (!any(tmp2)) {
     tmp2 <- tmp$Count >= 0
+  } # end if
+  # check if we have any process. If not, skip
+  if (!any(tmp2)) {
+    next
   } # end if
   enrichment_filt <- tmp[tmp2]
   tmp <- enrichment_filt$Description
