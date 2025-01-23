@@ -255,9 +255,9 @@ Q_CUTOFF = 0.2
 # You can specify the number of clusters for treeplots as an integer
 # If you want that value to be automatically calculated, set it to 0
 # Example:
-#   NCLUST = 4
+#   NCLUST_USER = 4
 
-NCLUST = 0
+NCLUST_USER = 0
 # ////////////////////////////
 
 

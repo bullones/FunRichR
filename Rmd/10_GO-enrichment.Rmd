@@ -201,7 +201,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp_tree <- pairwise_termsim(enrichment_list[[LIST_LEVEL]][[i]],
                                showCategory = nrow(enrichment_list[[LIST_LEVEL]][[i]]))
   # to get the number of clusters
-  if (NCLUST == 0){
+  if (NCLUST_USER == 0){ # to recalculate in each iteration
     mat <- tmp_tree@termsim # ONLY HAS UPPER TRIANGLE
     tmat <- t(mat)
     mat[lower.tri(mat)] <- tmat[lower.tri(tmat)] # complete lower triangle
@@ -214,6 +214,8 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
     names(group_dynamic) <- mat_tree$labels
     dynamic_k <- length(table(group_dynamic))
     NCLUST <- dynamic_k
+  } else {
+    NCLUST <- NCLUST_USER
   }
   # treeplot
   p_tp <- treeplot(tmp_tree,
