@@ -57,9 +57,17 @@ for (i in 1:length_loop) {
 }
 ```
 
+```{r}
+# check if the process is empty so things won't be plotted
+PROCESS <- !is.null(enrichment_list[[LIST_LEVEL]])
+if (!PROCESS) {
+  message(LIST_LEVEL, " has no enriched terms, so it will be skipped")
+}
+```
+
 Assign colors to the TF for the ggplot.
 
-```{r, eval=EVAL_TF, include=EVAL_TF}
+```{r, eval=EVAL_TF && PROCESS, include=EVAL_TF && PROCESS}
 # edit tf variable to assign colors
 tf_edited <- tf$Gene_ID
 tf_edited <- sort(tf_edited)
@@ -134,12 +142,12 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   } # end for i
 ```
 
-```{r, eval=(EVAL_TF && ONT=="BP"), child='11_TF.Rmd'}
+```{r, eval=(EVAL_TF && ONT=="BP" && PROCESS), child='11_TF.Rmd'}
 ```
 
 ### Dotplot
 
-```{r, fig.show = "hold", out.width = "50%", fig.height=0.12*ENRICH_FACTOR, fig.width=5}
+```{r, fig.show = "hold", out.width = "50%", fig.height=0.12*ENRICH_FACTOR, fig.width=5, eval=PROCESS, include=PROCESS}
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   MIN_GENES <- trunc(number_genes_enrichment[[LIST_LEVEL]][[i]]/ENRICH_FACTOR)
@@ -172,11 +180,11 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
 
 ### Treeplot
 
-```{r}
+```{r, eval=PROCESS, include=PROCESS}
 warning("Be careful with the interpretation of treeplots: if there are more than 10 clusters, the processes might be wrong placed")
 ```
 
-```{r, fig.show = "hold", out.width = "50%", fig.height=0.15*ENRICH_FACTOR, fig.width=18, warning=FALSE, message=FALSE, eval=LIST_LEVEL=="BP-OE", include=LIST_LEVEL=="BP-OE"}
+```{r, fig.show = "hold", out.width = "50%", fig.height=0.15*ENRICH_FACTOR, fig.width=18, warning=FALSE, message=FALSE, eval=LIST_LEVEL=="BP-OE" && PROCESS, include=LIST_LEVEL=="BP-OE" && PROCESS}
 # VOY A REPRESENTAR LOS TREEPLOT SOLO CON BP-OE PORQUE CON CC Y MF FALLA. HAY QUE ARREGLARLO
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
@@ -237,7 +245,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
 
 ### Network
 
-```{r, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
+```{r, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6, eval=PROCESS, include=PROCESS}
 network_plots <- list()
 network_plots[[LIST_LEVEL]] <- list()
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
@@ -269,7 +277,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
 
 ### Interactive network
 
-```{r, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
+```{r, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6, eval=PROCESS, include=PROCESS}
 plt <- htmltools::tagList()
 plt[[LIST_LEVEL]] <- htmltools::tagList()
 
@@ -320,17 +328,17 @@ for (i in 1:length(network_plots[[LIST_LEVEL]])) {
 }
 ```
 
-```{r}
+```{r, eval=PROCESS, include=PROCESS}
 message(cat("orange = transcription factor\npurple = gene of interest\nyellow = both transcription factor and gene of interest\ngreen = none of the above"))
 ```
 
-```{r, echo=FALSE, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
+```{r, echo=FALSE, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6, eval=PROCESS, include=PROCESS}
 plt
 ```
 
 ### Wordclouds by words
 
-```{bash, engine.opts='-l', results='hide'}
+```{bash, engine.opts='-l', results='hide', eval=PROCESS, include=PROCESS}
 # remove wordclouds directory
 rm -r wordclouds
 # create wordclouds directory
@@ -339,7 +347,7 @@ mkdir wordclouds
 
 Get stopwords.
 
-```{bash, engine.opts='-l', results='hide', eval=FALSE, include=FALSE}
+```{bash, engine.opts='-l', results='hide', eval=FALSE, include=FALSE, eval=PROCESS, include=PROCESS}
 # Obtain stopwords
 curl -sL "https://raw.githubusercontent.com/stopwords-iso/stopwords-en/master/stopwords-en.txt" |
 # sort stopwords and save as "stopwords"
@@ -352,7 +360,7 @@ head -n 4
 
 Create the text for the wordcloud graph.
 
-```{r}
+```{r, eval=PROCESS, include=PROCESS}
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   # create data.frame with GO term frequency
   wcdf <- read.table(text = enrichment_list[[LIST_LEVEL]][[i]]$GeneRatio,
@@ -381,7 +389,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
 
 EXPLICAR
 
-```{bash, message = FALSE, results='hide'}
+```{bash, message = FALSE, results='hide', eval=PROCESS, include=PROCESS}
 for file in wordclouds/*.tsv;
 do
 cat $file |
@@ -408,7 +416,7 @@ done
 
 EXPLICAR
 
-```{r, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
+```{r, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6, eval=PROCESS, include=PROCESS}
 # load all the variables for wc
 filenames <- list.files(paste0(SOURCE_DIR, "Rmd/wordclouds"),
                         pattern = "*.wc",
@@ -438,13 +446,13 @@ for (i in 1:length(ldf)) {
 
 Remove temporal wordcloud data
 
-```{bash}
+```{bash, eval=PROCESS, include=PROCESS}
 rm -r wordclouds
 ```
 
 ### Wordclouds by terms
 
-```{r, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
+```{r, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6, eval=PROCESS, include=PROCESS}
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   wcdf <- read.table(text = enrichment_list[[LIST_LEVEL]][[i]]$GeneRatio,
                      sep = "/")[1]
@@ -466,7 +474,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
 }
 ```
 
-```{r, eval=MODEL_REFERENCE==FALSE, include=MODEL_REFERENCE==FALSE}
+```{r, eval=MODEL_REFERENCE==FALSE && PROCESS, include=MODEL_REFERENCE==FALSE && PROCESS}
 # Convert IDs Arabidopsis to original organism and save (if the orthology was performed)
 # create dataframe to save data
 enriched_genes <- list()
