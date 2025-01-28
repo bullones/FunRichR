@@ -201,22 +201,27 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp_tree <- pairwise_termsim(enrichment_list[[LIST_LEVEL]][[i]],
                                showCategory = nrow(enrichment_list[[LIST_LEVEL]][[i]]))
   # to get the number of clusters
-  if (NCLUST_USER == 0){ # to recalculate in each iteration
-    mat <- tmp_tree@termsim # ONLY HAS UPPER TRIANGLE
-    tmat <- t(mat)
-    mat[lower.tri(mat)] <- tmat[lower.tri(tmat)] # complete lower triangle
-    mat[is.na(mat)] <- 1 # set diagonal to 1
-    mat_dist <- as.dist(mat)
-    mat_tree <- hclust(mat_dist, method = "ward.D")
-    group_dynamic <- cutreeDynamic(dendro = mat_tree,
-                                   distM = as.matrix(mat_dist),
-                                   minClusterSize = 20)
-    names(group_dynamic) <- mat_tree$labels
-    dynamic_k <- length(table(group_dynamic))
-    NCLUST <- dynamic_k
-  } else {
-    NCLUST <- NCLUST_USER
-  }
+  if (nrow(tmp_tree) >1){ # check if we have genes to cluster
+    if (NCLUST_USER == 0){ # to recalculate in each iteration
+      mat <- tmp_tree@termsim # ONLY HAS UPPER TRIANGLE
+      tmat <- t(mat)
+      mat[lower.tri(mat)] <- tmat[lower.tri(tmat)] # complete lower triangle
+      mat[is.na(mat)] <- 1 # set diagonal to 1
+      mat_dist <- as.dist(mat)
+      mat_tree <- hclust(mat_dist, method = "ward.D")
+      group_dynamic <- cutreeDynamic(dendro = mat_tree,
+                                     distM = as.matrix(mat_dist),
+                                     minClusterSize = 20)
+      names(group_dynamic) <- mat_tree$labels
+      dynamic_k <- length(table(group_dynamic))
+      NCLUST <- dynamic_k
+      } else {
+        NCLUST <- NCLUST_USER
+      }
+  } else { # print message and go to next iteration
+    print(paste0("Only one ", LIST_LEVEL," enrichment term found for ", names(enrichment_list[[LIST_LEVEL]][i]), ": ", tmp, ". No treeplot will be plotted"))
+      next
+    }
   # treeplot
   p_tp <- treeplot(tmp_tree,
                    showCategory = length(tmp),
