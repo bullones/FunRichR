@@ -275,6 +275,17 @@ ENRICH_FACTOR = 100
 # //////////////////////
 
 
+# %%%%%%%%%%%%%%%%%%%%%%
+# MAXIMUM TOP GOS ######
+#
+# In the enrichment with enrichGO, we calculate the number of genes involved in a GO term in our dataset (Counts) and the number of genes involved in that process in the organism of interest (Background). We calculate the Counts/Background ratio to determine the most represented GOs (Top GOs). You must specify the maximum number of Top GOs to plot as an expression heatmap.
+# Example:
+#   MAXTOPGOS <- 100
+
+MAXTOPGOS <- 100
+# //////////////////////
+
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # FREQUENCY FOR WORDCLOUDS ####
 #

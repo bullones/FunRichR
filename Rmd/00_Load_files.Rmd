@@ -2,7 +2,8 @@
 # load data ####
 genes <- read.table(file = paste0(WD_DIR, FILE),
                     sep = "\t",
-                    header = TRUE)
+                    header = TRUE,
+                    check.names = FALSE) # avoid R to modify colnames
 ```
 
 ```{r format_1, eval=EXPERIMENT==1, include=EXPERIMENT==1}

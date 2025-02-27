@@ -294,8 +294,17 @@ genes_list_arab <- l
 
 ```{r change_names}
 # change names for constrasts
-names(genes_list_arab)[grep("_up", names(genes_list_arab))] <- gsub("\\.", "\\.>\\.", names(genes_list_arab)[grep("_up", names(genes_list_arab))])
-names(genes_list_arab)[grep("_down", names(genes_list_arab))] <- gsub("\\.", "\\.<\\.", names(genes_list_arab)[grep("_down", names(genes_list_arab))])
+if (any(grepl("||)-\\(", names(genes_list_arab)))) {
+  names(genes_list_arab)[grep("_up", names(genes_list_arab))] <- gsub("\\)-\\(", "\\)>\\(", names(genes_list_arab)[grep("_up", names(genes_list_arab))])
+  names(genes_list_arab)[grep("_down", names(genes_list_arab))] <- gsub("\\)-\\(", "\\)<\\(", names(genes_list_arab)[grep("_down", names(genes_list_arab))])
+} else if (any(grepl("-", names(genes_list_arab)))) {
+  names(genes_list_arab)[grep("_up", names(genes_list_arab))] <- gsub("-", ">", names(genes_list_arab)[grep("_up", names(genes_list_arab))])
+names(genes_list_arab)[grep("_down", names(genes_list_arab))] <- gsub("-", "<", names(genes_list_arab)[grep("_down", names(genes_list_arab))])
+} else if (any(grepl("\\.", names(genes_list_arab)))) {
+  names(genes_list_arab)[grep("_up", names(genes_list_arab))] <- gsub("\\.", ">", names(genes_list_arab)[grep("_up", names(genes_list_arab))])
+names(genes_list_arab)[grep("_down", names(genes_list_arab))] <- gsub("\\.", "<", names(genes_list_arab)[grep("_down", names(genes_list_arab))])
+}
+# remove _up and _down from list names
 names(genes_list_arab) <- gsub("_up", "", names(genes_list_arab))
 names(genes_list_arab) <- gsub("_down", "", names(genes_list_arab))
 ```
