@@ -500,13 +500,14 @@ ONT <- "CC"
 ```{r GO-CC, child='Rmd/10_GO-enrichment.Rmd'}
 ```
 
-# KEGG pathways enrichment {.tabset .tabset-pills .tabset-fade}
+## KEGG pathways enrichment {.tabset .tabset-pills .tabset-fade}
 
 KEGG pathways enrichment calculations
 
 ```{r over_representation_KEGG, warning=FALSE, message=FALSE}
-enrichment_list[["kegg"]] <- list()
-number_genes_enrichment[["kegg"]] <- list()
+LIST_LEVEL <- "kegg"
+enrichment_list[[LIST_LEVEL]] <- list()
+number_genes_enrichment[[LIST_LEVEL]] <- list()
 
 for (i in 1:length(genes_list_kegg)) {
   temp <- enrichKEGG(gene = genes_list_kegg[[i]]$ENTREZID,
@@ -517,23 +518,24 @@ for (i in 1:length(genes_list_kegg)) {
                      minGSSize = MIN_GSSIZE,
                      maxGSSize = MAX_GSSIZE)
   
-  # comprobamos si hay enriquecimiento
+  temp@result$CountBg <- temp@result$Count / as.numeric(gsub("/.*", "",temp@result$BgRatio))
+  
+  # check if there was enrichment
   empty <- length(temp$ID) == 0
 
-  # si está vacío, no lo guardamos en la lista
+  # if it's empty we don't save it in the list
   if (empty == FALSE)
   {
-    # guardamos los valores en una lista
+    # save values in the list
     name <- names(genes_list_kegg)[i]
     enrichment_list$`kegg`[[name]] <- temp
     # save number of genes analysed in a vector
     number_genes_enrichment$`kegg`[[name]] <- length(genes_list_kegg[[i]]$ENTREZID)
   } else {
-    print(paste0("0 KEGG pathways found for ", names(genes_list_kegg)[i]))
+    message(paste0("0 KEGG pathways found for ", names(genes_list_kegg)[i]))
   }
 }
 
-# eliminamos variables innecesarias
 rm(temp)
 ```
 
@@ -555,100 +557,106 @@ Check if there was any KEGG pathways enrichment.
 ```{r check_KEGG}
 check_KEGG <- grep("kegg", names(enrichment_list))
 check_KEGG <- !is_empty(check_KEGG)
-```
-
-## Dotplot
-
-```{r dotplots_KEGG, eval=check_KEGG, include=check_KEGG, fig.show = "hold", out.width = "50%", fig.height=5, fig.width=5}
-for (i in 1:length(enrichment_list$`kegg`)) {
-  tmp <- enrichment_list$`kegg`[[i]]
-  # force MIN_GENES = 1 for KEGG plots
-  MIN_GENES <- 1
-  # MIN_GENES <- trunc(number_genes_enrichment$`kegg`[[i]]/ENRICH_FACTOR)
-  # if (MIN_GENES == 0) {
-  #   MIN_GENES <- 1
-  # } # end if
-  tmp2 <- tmp$Count >= MIN_GENES
-  # if no process passes the filter, we skip the plots
-  if (!any(tmp2)) {
-    next
-  } # end if
-  tmp <- tmp[tmp2]$Description
-  
-  # dotplot
-  set.seed(SEED)
-  p_dp <- dotplot(enrichment_list$`kegg`[[i]],
-                    showCategory = tmp, # seleccionamos cuántos procesos
-                    font.size = 6,
-                    label_format = 80) + # sets wrap length
-      ggtitle(paste0(names(enrichment_list$`kegg`[i]), ": enriched KEGGs")) +
-      theme(plot.title = element_text(hjust = 0.9))
-    
-    print(p_dp)
+if (!check_KEGG) {
+  message(LIST_LEVEL, " has no enriched terms, so it will be skipped")
 }
 ```
 
-## Network
-
-```{r networks_KEGG, eval=check_KEGG, include=check_KEGG, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
-network_plots[["kegg"]] <- list()
-for (i in 1:length(enrichment_list$`kegg`)) {
-  tmp <- enrichment_list$`kegg`[[i]]
-  # force MIN_GENES = 1 for KEGG plots
-  MIN_GENES <- 1
-  # MIN_GENES <- trunc(number_genes_enrichment$`kegg`[[i]]/ENRICH_FACTOR)
-  # if (MIN_GENES == 0) {
-  #   MIN_GENES <- 1
-  # } # end if
-  tmp2 <- tmp$Count >= MIN_GENES
-  # if no process passes the filter, we skip the plots
-  if (!any(tmp2)) {
-    next
-  } # end if
-  tmp <- tmp[tmp2]$Description
-  
-  # network
-  set.seed(SEED)
-  p_nt <- emapplot(pairwise_termsim(enrichment_list$`kegg`[[i]]),
-                     showCategory = length(tmp), # seleccionamos cuántos procesos
-                     # cex_label_category = 0.5, # tamaño etiquetas nodos
-                     node_label = "none") + # quitar etiquetas 
-            ggtitle(paste0(names(enrichment_list$`kegg`[i]), ": enriched KEGGs"))
-    
-    print(p_nt)
-    
-    network_plots$kegg[[names(enrichment_list$`kegg`[i])]] <- p_nt
-}
+```{r, eval=check_KEGG, child='Rmd/12_Plots.Rmd'}
 ```
 
-## Interactive network
+<!-- ## Dotplot -->
 
-```{r interactive_kegg, eval=check_KEGG, include=check_KEGG, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
-plt <- htmltools::tagList()
-plt[["kegg"]] <- htmltools::tagList()
+<!-- ```{r dotplots_KEGG, eval=check_KEGG, include=check_KEGG, fig.show = "hold", out.width = "50%", fig.height=5, fig.width=5} -->
+<!-- for (i in 1:length(enrichment_list$`kegg`)) { -->
+<!--   tmp <- enrichment_list$`kegg`[[i]] -->
+<!--   # force MIN_GENES = 1 for KEGG plots -->
+<!--   MIN_GENES <- 1 -->
+<!--   # MIN_GENES <- trunc(number_genes_enrichment$`kegg`[[i]]/ENRICH_FACTOR) -->
+<!--   # if (MIN_GENES == 0) { -->
+<!--   #   MIN_GENES <- 1 -->
+<!--   # } # end if -->
+<!--   tmp2 <- tmp$Count >= MIN_GENES -->
+<!--   # if no process passes the filter, we skip the plots -->
+<!--   if (!any(tmp2)) { -->
+<!--     next -->
+<!--   } # end if -->
+<!--   tmp <- tmp[tmp2]$Description -->
 
-if (length(network_plots$`kegg`) != 0) {
-for (i in 1:length(network_plots$`kegg`)) {
-  set.seed(SEED)
-  p_nt_int <- ggplot(network_plots$`kegg`[[i]]$data,
-                       aes(x = x, y = y, name = name)) +
-      geom_point(aes(color = "#0099f9"), size = 2) +
-    # scale_color_manual(values = unlist(ggcolors[["kegg"]][[i]]),
-    #                    limits = force) + # define colors
-    theme(legend.position = "none") +
-      ggtitle(paste0(names(network_plots$`kegg`[i]), ": enriched KEGGs"))
-    plt$`kegg`[[i]] <- as_widget(ggplotly(p_nt_int,
-                                          height = 600,
-                                          width = 600))
-}
-}
-```
+<!--   # dotplot -->
+<!--   set.seed(SEED) -->
+<!--   p_dp <- dotplot(enrichment_list$`kegg`[[i]], -->
+<!--                     showCategory = tmp, # seleccionamos cuántos procesos -->
+<!--                     font.size = 6, -->
+<!--                     label_format = 80) + # sets wrap length -->
+<!--       ggtitle(paste0(names(enrichment_list$`kegg`[i]), ": enriched KEGGs")) + -->
+<!--       theme(plot.title = element_text(hjust = 0.9)) -->
 
-```{r, eval=check_KEGG, include=check_KEGG, echo=FALSE, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
-if (length(network_plots$`kegg`) != 0) {
-  plt
-}
-```
+<!--     print(p_dp) -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- ## Network -->
+
+<!-- ```{r networks_KEGG, eval=check_KEGG, include=check_KEGG, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6} -->
+<!-- network_plots[["kegg"]] <- list() -->
+<!-- for (i in 1:length(enrichment_list$`kegg`)) { -->
+<!--   tmp <- enrichment_list$`kegg`[[i]] -->
+<!--   # force MIN_GENES = 1 for KEGG plots -->
+<!--   MIN_GENES <- 1 -->
+<!--   # MIN_GENES <- trunc(number_genes_enrichment$`kegg`[[i]]/ENRICH_FACTOR) -->
+<!--   # if (MIN_GENES == 0) { -->
+<!--   #   MIN_GENES <- 1 -->
+<!--   # } # end if -->
+<!--   tmp2 <- tmp$Count >= MIN_GENES -->
+<!--   # if no process passes the filter, we skip the plots -->
+<!--   if (!any(tmp2)) { -->
+<!--     next -->
+<!--   } # end if -->
+<!--   tmp <- tmp[tmp2]$Description -->
+
+<!--   # network -->
+<!--   set.seed(SEED) -->
+<!--   p_nt <- emapplot(pairwise_termsim(enrichment_list$`kegg`[[i]]), -->
+<!--                      showCategory = length(tmp), # seleccionamos cuántos procesos -->
+<!--                      # cex_label_category = 0.5, # tamaño etiquetas nodos -->
+<!--                      node_label = "none") + # quitar etiquetas  -->
+<!--             ggtitle(paste0(names(enrichment_list$`kegg`[i]), ": enriched KEGGs")) -->
+
+<!--     print(p_nt) -->
+
+<!--     network_plots$kegg[[names(enrichment_list$`kegg`[i])]] <- p_nt -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- ## Interactive network -->
+
+<!-- ```{r interactive_kegg, eval=check_KEGG, include=check_KEGG, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6} -->
+<!-- plt <- htmltools::tagList() -->
+<!-- plt[["kegg"]] <- htmltools::tagList() -->
+
+<!-- if (length(network_plots$`kegg`) != 0) { -->
+<!-- for (i in 1:length(network_plots$`kegg`)) { -->
+<!--   set.seed(SEED) -->
+<!--   p_nt_int <- ggplot(network_plots$`kegg`[[i]]$data, -->
+<!--                        aes(x = x, y = y, name = name)) + -->
+<!--       geom_point(aes(color = "#0099f9"), size = 2) + -->
+<!--     # scale_color_manual(values = unlist(ggcolors[["kegg"]][[i]]), -->
+<!--     #                    limits = force) + # define colors -->
+<!--     theme(legend.position = "none") + -->
+<!--       ggtitle(paste0(names(network_plots$`kegg`[i]), ": enriched KEGGs")) -->
+<!--     plt$`kegg`[[i]] <- as_widget(ggplotly(p_nt_int, -->
+<!--                                           height = 600, -->
+<!--                                           width = 600)) -->
+<!-- } -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- ```{r, eval=check_KEGG, include=check_KEGG, echo=FALSE, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6} -->
+<!-- if (length(network_plots$`kegg`) != 0) { -->
+<!--   plt -->
+<!-- } -->
+<!-- ``` -->
 
 # Save data
 
