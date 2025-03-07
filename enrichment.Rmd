@@ -61,7 +61,6 @@ Other configuration variables
 SEED <- 8                     # set seed for plots
 P_ADJUST_METHOD <- "none"     # p adjust method for enrichGO function
 MIN_GSSIZE <- 10              # minimal size of genes annotated for testing
-MIN_GSSIZE_GSEA <- 10         # minimal size of genes annotated for GSEA testing
 MAX_GSSIZE <- 500             # maximal size of genes annotated for testing
 VERBOSE <- FALSE              # show or hide GSEA messages
 TO_TYPE <- "ENTREZID"         # output ID type for KEGG analysis
@@ -81,18 +80,10 @@ message(paste0("We'll only keep the 3 biggest communities per cluster if they ar
 ```
 
 ```{r, include=FALSE}
-# check if MIN_SCORE exists if we are doing GSEA
-ASSIGN <- exists("MIN_SCORE")
 # complete table when we don't use orthology file
 if (!exists("ORTHOLOGY_FILE")){
   ORTHOLOGY_FILE <- "NA"
 }
-```
-
-```{r complete_table, eval=ASSIGN == FALSE, include=FALSE}
-# assign NA values to variables that are not defined
-MIN_SCORE <- "NA"
-MIN_GSSIZE_GSEA <- "NA"
 ```
 
 # Load files
@@ -140,13 +131,11 @@ Organism for KEGG pathways | `r kegg_organism`
 Keytype of input gene for enrichment | `r KEYTYPE`
 Adjusted pvalue cutoff for enrichment | `r P_CUTOFF`
 Method for adjuted pvalue for enrichment | `r P_ADJUST_METHOD`
-Minimal size of genes for over-enrichment | `r MIN_GSSIZE`
-Factor for enrichment representation | `r ENRICH_FACTOR`
-Minimal size of genes for GSEA | `r MIN_GSSIZE_GSEA`
+Minimal size of genes for enrichment | `r MIN_GSSIZE`
 Maximal size of genes for enrichment | `r MAX_GSSIZE`
+Maximum processes to plot | `r MAX_PLOT`
 Output id type for conversion to KEGG ids | `r TO_TYPE`
 Keytype of input gene for KEGG | `r KEYTYPE_KEGG`
-Minimun score for GSEA plots | `r MIN_SCORE`
 
 ```{r remove_empty}
 # remove empty sublist from gene_list
@@ -427,7 +416,7 @@ for (i in 1:length(genes_list_arab)) {
 }
 
 # eliminamos variables innecesarias
-rm(genes_list, temp, temp_kegg, ort, uniprot)
+rm(genes_list, temp, temp_kegg, uniprot)
 ```
 
 Prepare a list for enrichment analysis.
@@ -518,14 +507,13 @@ for (i in 1:length(genes_list_kegg)) {
                      minGSSize = MIN_GSSIZE,
                      maxGSSize = MAX_GSSIZE)
   
-  temp@result$CountBg <- temp@result$Count / as.numeric(gsub("/.*", "",temp@result$BgRatio))
-  
   # check if there was enrichment
   empty <- length(temp$ID) == 0
 
   # if it's empty we don't save it in the list
   if (empty == FALSE)
   {
+    temp@result$CountBg <- temp@result$Count / as.numeric(gsub("/.*", "",temp@result$BgRatio))
     # save values in the list
     name <- names(genes_list_kegg)[i]
     enrichment_list$`kegg`[[name]] <- temp
@@ -563,6 +551,13 @@ if (!check_KEGG) {
 ```
 
 ```{r, eval=check_KEGG, child='Rmd/12_Plots.Rmd'}
+```
+
+## GSEA enrichment {.tabset .tabset-pills .tabset-fade}
+
+Only available for RSeqFlow output right now.
+
+```{r, eval=EXPERIMENT==1, child='Rmd/20_do-GSEA.Rmd'}
 ```
 
 # Save data

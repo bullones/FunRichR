@@ -1,46 +1,46 @@
-We prepare our data for GSEA analyses.
+We prepare our data for GSEA analyses. For that purpose, we will use all the genes that are expressed and their t-value.
 
-```{r prepare_gsea}
-# prepare data to be analysed by GSEA
-# with Arabidopsis
+```{r}
+# We keep the t-value columns from genes_gsea
+keep <- 1 # gene ID column
+keep <- append(keep, grep("^t\\.", colnames(genes_gsea)))
+genes_gsea <- genes_gsea[, keep]
+
+# creamos una lista vacía
 genes_list_arab_gsea <- list()
-names_arab_unique <- names(genes_list_arab)
-names_arab_unique <- gsub("_up", "", names_arab_unique)
-names_arab_unique <- gsub("_down", "", names_arab_unique)
-names_arab_unique <- unique(names_arab_unique)
-
-for (i in 1:length(names_arab_unique)) {
-  # keep up and down genes for contrast i
-  keep <- grep(names_arab_unique[i], names(genes_list_arab))
-  # merge in a data.frame
-  my_id <- as.data.frame(do.call(rbind, genes_list_arab[keep]))
-  # sort by ID and FC
-  my_id <- arrange(my_id, desc(my_id[[2]]), desc(my_id[[3]]))
-  # keep one value per ID
-  my_id <- my_id[!duplicated(my_id[[2]]), ]
-  # keep FC
-  tmp <- my_id[[3]]
+for (i in 2:ncol(genes_gsea)) {
+  # orthology
+  tmp <- merge(x = genes_gsea[, c(1, i)],
+               y = ort,
+               by = 1,
+               all = FALSE)
+  tmp <- tmp[, c(1, 3, 2)]
+  # remove isoforms
+  tmp[[2]] <-  gsub('\\.[0-9]', "", tmp[[2]])
+  # sort by ID and t-value
+  tmp <- arrange(tmp, desc(tmp[[2]]), desc(tmp[[3]]))
+  # # keep one value per ID
+  # tmp <- tmp[!duplicated(tmp[[2]]), ]
+  # keep t-value
+  tmp2 <- tmp[[3]]
   # name vector
-  names(tmp) <- my_id[[2]]
+  names(tmp2) <- tmp[[2]]
   # omit NA values
-  tmp <- na.omit(tmp)
+  tmp2 <- na.omit(tmp2)
   # sort in decreasing order
-  tmp <- sort(tmp, decreasing = TRUE)
-  
-  # we save tmp if not empty
-  if (length(tmp) != 0) {
-    name <- names_arab_unique[i]
-    genes_list_arab_gsea[[name]] <- tmp
-  }
+  tmp2 <- sort(tmp2, decreasing = TRUE)
+  name <- colnames(genes_gsea)[i]
+  name <- gsub("t.", "", name)
+  genes_list_arab_gsea[[name]] <- tmp2
 }
 
-rm(genes_list_arab, genes_list_kgg, tmp, my_id)
+rm(keep, genes_gsea)
 ```
 
 ```{r save_genes_GSEA}
-# save genes for gsea arab
+# save genes for GSEA enrichment arab
 save_ids <- data.frame()
-for (i in 1:length(genes_list_arab_gsea)) {
+for (i in 1:length(genes_list_arab_gsea)){
   tmp <- as.data.frame(names(genes_list_arab_gsea[[i]]))
   colnames(tmp) <- "Gene_ID"
   tmp$condition <- tmp$Gene_ID

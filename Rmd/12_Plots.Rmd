@@ -7,10 +7,12 @@ if (LIST_LEVEL!="kegg"){
   ont_plot <- NULL
   list_plot <- "KEGGs"
 }
+# save MAX_PLOT value
+MAX_PLOT.BK <- MAX_PLOT
 ```
 
 
-```{r}
+```{r, eval=!grepl("GSEA", LIST_LEVEL), include=!grepl("GSEA", LIST_LEVEL)}
 # get TopGO
 COUNTBG_CUTOFF <- 0.25
 tmp <- data.frame()
@@ -68,6 +70,10 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   for (j in 1:length(rownames(tmp))) {
     # get j geneID and compare it with the TF list
     tmp2 <- tmp[j,]$geneID
+    # for GSEA it is $core_enrichment
+    if (is.null(tmp2)) {
+      tmp2 <- tmp[j,]$core_enrichment
+    }
     tmp2 <- unlist(strsplit(tmp2, "/"))
     # assign TFs and add them to the enrichment object
     tmp3 <- merge(x = as.data.frame(tmp2),
@@ -106,12 +112,19 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
 ```
 
 ```{r}
-#0.12*ENRICH_FACTOR
-height_plots <- c()
+# get maximum enrichment for the process
+max_enrich <- c()
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
-  height_plots <- append(height_plots, (nrow(enrichment_list[[LIST_LEVEL]][[i]])))
-  height_plots <- max(height_plots)
+  max_enrich <- append(max_enrich, (nrow(enrichment_list[[LIST_LEVEL]][[i]])))
+  max_enrich <- max(max_enrich)
 }
+# check if there are more enriched genes that those to be plotted
+if (max_enrich > MAX_PLOT) {
+  height_plots <- MAX_PLOT
+} else {
+  height_plots <- max_enrich
+}
+# minimum height of 25px
 if (height_plots<25){
   height_plots <- 25
 }
@@ -119,15 +132,38 @@ if (height_plots<25){
 
 ### Dotplot
 
-```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.16*height_plots), fig.width=5}
+```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.19*height_plots), fig.width=5}
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
-  # if we are NOT plotting KEGGs, we will filter them
-  MIN_GENES <- trunc(number_genes_enrichment[[LIST_LEVEL]][[i]]/ENRICH_FACTOR)
-  if (MIN_GENES == 0 || LIST_LEVEL=="kegg") {
-    MIN_GENES <- 1
-  } # end if
-  tmp2 <- tmp$Count >= MIN_GENES
+  tmp2 <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  # check if there are enough terms to be plotted
+  if (nrow(tmp2) < MAX_PLOT) {
+    MAX_PLOT <- nrow(tmp2)
+    message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
+  }
+  # check if there are enought terms to be plotted with GSEA analyses
+  if (grepl("GSEA", LIST_LEVEL)){
+    if (nrow(tmp2) < 2*MAX_PLOT) {
+      MAX_PLOT <- floor(MAX_PLOT/3)
+      message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
+    } # end if nrow(tmp)
+  } # end if GSEA
+  # if it's over-enrichment
+  if (grepl("OE", LIST_LEVEL)){
+    tmp2_ord <- order(tmp2$CountBg, decreasing = TRUE)[1:MAX_PLOT]
+    tmp2 <- seq_len(nrow(tmp2)) %in% tmp2_ord
+  } # end if OE
+  # if it's KEGG
+  if (grepl("kegg", LIST_LEVEL)) {
+    tmp2 <- rep(TRUE, nrow(tmp2))
+  } # end if KEGG
+  # if it's GSEA
+  if (grepl("GSEA", LIST_LEVEL)) {
+    tmp2_order <- order(tmp2$NES)
+    tmp2_order <- c(head(tmp2_order, MAX_PLOT), tail(tmp2_order, MAX_PLOT))
+    tmp2 <- seq_len(nrow(tmp)) %in% tmp2_order
+  }
+  MAX_PLOT <- MAX_PLOT.BK
   # if no process passes the filter, we plot all of them
   if (!any(tmp2)) {
     tmp2 <- tmp$Count >= 0
@@ -138,42 +174,37 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   } # end if
   tmp3 <- tmp[tmp2]$Description
   
+  # edit enrichResult object
+  tmp4 <- tmp
+  tmp4@result <- tmp4@result[tmp4@result$Description %in% tmp3, ]
+  
   # dotplot
   set.seed(SEED)
-  p_dp <- dotplot(enrichment_list[[LIST_LEVEL]][[i]],
-                    showCategory = tmp3, # seleccionamos cuántos procesos
-                    font.size = 6,
-                    label_format = 80) + # sets wrap length
-      ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i]), " enriched ", list_plot, " ", ont_plot)) +
-      theme(plot.title = element_text(hjust = 0.9))
+  p_dp <- dotplot(tmp4,
+                  showCategory = nrow(tmp4), # seleccionamos los procesos
+                  font.size = 6,
+                  label_format = 80) + # sets wrap length
+    ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i]), " enriched ", list_plot, " ", ont_plot)) +
+    theme(plot.title = element_text(hjust = 0.9))
   print(p_dp)
   
+  # Not for GSEA analyses
+  if (!grepl("GSEA", LIST_LEVEL)){
     # dotplot TOPGO
-  tmp4 <- tmp@result$Description[tmp@result$TopGO]
-  set.seed(SEED)
-  if (length(tmp4)){
-    p_dp <- dotplot(enrichment_list[[LIST_LEVEL]][[i]],
-                    showCategory = tmp4, # seleccionamos cuántos procesos
-                    font.size = 6,
-                    label_format = 80) + # sets wrap length
-      ggtitle(paste0("Top (", round(COUNTBG_CUTOFF*100, 2), " %) ", list_plot," in ", names(enrichment_list[[LIST_LEVEL]][i]), " ", ont_plot)) +
-      theme(plot.title = element_text(hjust = 0.9))
-  print(p_dp)
-  } else {
-    plot(1, 1, main = "No Top GO to plot")
-  }
-  
-  # p_bp <- mutate(enrichment_list[[LIST_LEVEL]][[i]],
-  #                qscore = -log(p.adjust, base=10)) |>
-  #   barplot(x="qscore",
-  #           showCategory = tmp,
-  #           font.size = 6,
-  #           label_format = 80) +
-  #   ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i]), " enriched GOs (", ONT, ")")) +
-  #     theme(plot.title = element_text(hjust = 0.9))
-  # 
-  #   print(heatplot(enrichment_list[[LIST_LEVEL]][[i]],
-  #            showCategory=5))
+    tmp4 <- tmp@result$Description[tmp@result$TopGO]
+    set.seed(SEED)
+    if (length(tmp4)){
+      p_dp <- dotplot(tmp,
+                      showCategory = tmp4, # seleccionamos los procesos
+                      font.size = 6,
+                      label_format = 80) + # sets wrap length
+        ggtitle(paste0("Top (", round(COUNTBG_CUTOFF*100, 2), " %) ", list_plot," in ", names(enrichment_list[[LIST_LEVEL]][i]), " ", ont_plot)) +
+        theme(plot.title = element_text(hjust = 0.9))
+      print(p_dp)
+      } else {
+        plot(1, 1, main = "No Top GO to plot")
+      }
+  } # end if GSEA
 }
 ```
 
@@ -183,36 +214,56 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
 warning("Be careful with the interpretation of treeplots: if there are more than 10 clusters, the processes might be wrong placed")
 ```
 
-
-```{r}
-#0.15*ENRICH_FACTOR
-if (height_plots<20){
-  height_plots <- 20
-}
-```
-
-```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.20*height_plots), fig.width=18, warning=FALSE, message=FALSE}
+```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.22*height_plots), fig.width=18, warning=FALSE, message=FALSE}
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
-  MIN_GENES <- trunc(number_genes_enrichment[[LIST_LEVEL]][[i]]/ENRICH_FACTOR)
-  if (MIN_GENES == 0 || LIST_LEVEL=="kegg") {
-    MIN_GENES <- 1
-    } # end if
-  tmp2 <- tmp$Count >= MIN_GENES
+  tmp2 <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  # check if there are enough terms to be plotted
+  if (nrow(tmp2) < MAX_PLOT) {
+    MAX_PLOT <- nrow(tmp2)
+    message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
+  }
+  # check if there are enought terms to be plotted with GSEA analyses
+  if (grepl("GSEA", LIST_LEVEL)){
+    if (nrow(tmp2) < 2*MAX_PLOT) {
+      MAX_PLOT <- floor(MAX_PLOT/3)
+      message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
+    } # end if nrow(tmp)
+  } # end if GSEA
+  # if it's over-enrichment
+  if (grepl("OE", LIST_LEVEL)){
+    tmp2_ord <- order(tmp2$CountBg, decreasing = TRUE)[1:MAX_PLOT]
+    tmp2 <- seq_len(nrow(tmp2)) %in% tmp2_ord
+  } # end if OE
+  # if it's KEGG
+  if (grepl("kegg", LIST_LEVEL)) {
+    tmp2 <- rep(TRUE, nrow(tmp2))
+  } # end if KEGG
+  # if it's GSEA
+  if (grepl("GSEA", LIST_LEVEL)) {
+    tmp2_order <- order(tmp2$NES)
+    tmp2_order <- c(head(tmp2_order, MAX_PLOT), tail(tmp2_order, MAX_PLOT))
+    tmp2 <- seq_len(nrow(tmp)) %in% tmp2_order
+  }
+  MAX_PLOT <- MAX_PLOT.BK
   # if no process passes the filter, we plot all of them
   if (!any(tmp2)) {
     tmp2 <- tmp$Count >= 0
-    } # end if
+  } # end if
   # check if we have any process. If not, skip
   if (!any(tmp2)) {
     next
-    } # end if
-  tmp <- tmp[tmp2]$Description
+  } # end if
+  tmp3 <- tmp[tmp2]$Description
   
+  # edit enrichResult object
+  tmp4 <- tmp
+  tmp4@result <- tmp4@result[tmp4@result$Description %in% tmp3, ]
+
   # treeplot
   set.seed(SEED)
-  tmp_tree <- pairwise_termsim(enrichment_list[[LIST_LEVEL]][[i]],
-                               showCategory = nrow(enrichment_list[[LIST_LEVEL]][[i]]))
+  tmp_tree <- pairwise_termsim(tmp4,
+                               showCategory = nrow(tmp4))
   # to get the number of clusters
   if (nrow(tmp_tree) >1){ # check if we have genes to cluster
     if (NCLUST_USER == 0){ # to recalculate in each iteration
@@ -232,16 +283,17 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
         NCLUST <- NCLUST_USER
       }
   } else { # print message and go to next iteration
-    print(paste0("Only one ", LIST_LEVEL," enrichment term found for ", names(enrichment_list[[LIST_LEVEL]][i]), ": ", tmp, ". No treeplot will be plotted"))
+    print(paste0("Only one ", LIST_LEVEL," enrichment term found for ", names(enrichment_list[[LIST_LEVEL]][i]), ": ", tmp3, ". No treeplot will be plotted"))
       next
-    }
+  }
+  # check NCLUST is not bigger than 15
+  if (NCLUST > 15) NCLUST <- 15
   # treeplot
   p_tp <- treeplot(tmp_tree,
-                   showCategory = length(tmp),
+                   showCategory = nrow(tmp_tree),
                    fontsize = 3,
-                   nCluster = NCLUST,
                    # label_format_tiplab = 35,
-                   cluster.params = list(label_words_n = 5, label_format = 30)) +
+                   cluster.params = list(label_words_n = 5, label_format = 30, n = NCLUST)) +
     ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i]), " enriched ", list_plot, " ", ont_plot)) +
     theme(plot.title = element_text(hjust = 0.9))
   print(p_tp)
@@ -250,7 +302,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
 
 ### Heatmap
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, eval=!grepl("GSEA", LIST_LEVEL), include=!grepl("GSEA", LIST_LEVEL)}
 # calculate heatmap
 # save first iteration to merge later using a for loop
 tmp_CountBg <- enrichment_list[[LIST_LEVEL]][[1]]@result[enrichment_list[[LIST_LEVEL]][[1]]@result$TopGO, c("Description", "CountBg")]
@@ -310,7 +362,7 @@ if (nrow(tmp_CountBg)) {
 }
 ```
 
-```{r, fig.height=height, fig.width=width, warning=FALSE}
+```{r, fig.height=height, fig.width=width, warning=FALSE, eval=!grepl("GSEA", LIST_LEVEL), include=!grepl("GSEA", LIST_LEVEL)}
 if (nrow(tmp_CountBg)) {
 # order pheatmap according to GOs frequency
   row_order <- order(rowSums(tmp_CountBg != 0), decreasing = TRUE)
@@ -337,26 +389,53 @@ network_plots <- list()
 network_plots[[LIST_LEVEL]] <- list()
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
-# if we are NOT plotting KEGGs, we will filter them
-  MIN_GENES <- trunc(number_genes_enrichment[[LIST_LEVEL]][[i]]/ENRICH_FACTOR)
-  if (MIN_GENES == 0 || LIST_LEVEL=="kegg") {
-    MIN_GENES <- 1
-    } # end if
-  tmp2 <- tmp$Count >= MIN_GENES
+  tmp2 <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  # check if there are enough terms to be plotted
+  if (nrow(tmp2) < MAX_PLOT) {
+    MAX_PLOT <- nrow(tmp2)
+    message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
+  }
+  # check if there are enought terms to be plotted with GSEA analyses
+  if (grepl("GSEA", LIST_LEVEL)){
+    if (nrow(tmp2) < 2*MAX_PLOT) {
+      MAX_PLOT <- floor(MAX_PLOT/3)
+      message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
+    } # end if nrow(tmp)
+  } # end if GSEA
+  # if it's over-enrichment
+  if (grepl("OE", LIST_LEVEL)){
+    tmp2_ord <- order(tmp2$CountBg, decreasing = TRUE)[1:MAX_PLOT]
+    tmp2 <- seq_len(nrow(tmp2)) %in% tmp2_ord
+  } # end if OE
+  # if it's KEGG
+  if (grepl("kegg", LIST_LEVEL)) {
+    tmp2 <- rep(TRUE, nrow(tmp2))
+  } # end if KEGG
+  # if it's GSEA
+  if (grepl("GSEA", LIST_LEVEL)) {
+    tmp2_order <- order(tmp2$NES)
+    tmp2_order <- c(head(tmp2_order, MAX_PLOT), tail(tmp2_order, MAX_PLOT))
+    tmp2 <- seq_len(nrow(tmp)) %in% tmp2_order
+  }
+  MAX_PLOT <- MAX_PLOT.BK
   # if no process passes the filter, we plot all of them
   if (!any(tmp2)) {
     tmp2 <- tmp$Count >= 0
-    } # end if
+  } # end if
   # check if we have any process. If not, skip
   if (!any(tmp2)) {
     next
-    } # end if
+  } # end if
   tmp3 <- tmp[tmp2]$Description
+  
+  # edit enrichResult object
+  tmp4 <- tmp
+  tmp4@result <- tmp4@result[tmp4@result$Description %in% tmp3, ]
   
   # network
   set.seed(SEED)
-  p_nt <- emapplot(pairwise_termsim(enrichment_list[[LIST_LEVEL]][[i]]),
-                   showCategory = length(tmp3), # seleccionamos cuántos procesos
+  p_nt <- emapplot(pairwise_termsim(tmp4),
+                   showCategory = nrow(tmp4), # seleccionamos cuántos procesos
                    # cex_label_category = 0.5, # tamaño etiquetas nodos
                    node_label = "none") + # quitar etiquetas 
             ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i]), " enriched ", list_plot, " ", ont_plot))
@@ -373,10 +452,6 @@ plt[[LIST_LEVEL]] <- htmltools::tagList()
 
 if (length(network_plots[[LIST_LEVEL]]) != 0){
   if (exists("ggcolors")) {
-    # legend_colors <- c("Transcription factors" = "orange",
-    #                    "Genes of interest" = "purple",
-    #                    "Both categories" = "yellow",
-    #                    "None" = "green")
     for (i in 1:length(network_plots[[LIST_LEVEL]])) {
       # keep network_plots data
       tmp <- network_plots[[LIST_LEVEL]][[i]]$data
@@ -396,10 +471,7 @@ if (length(network_plots[[LIST_LEVEL]]) != 0){
         scale_color_manual(name = "Processes including:",
                            breaks = c("Transcription factors", "Genes of interest", "Both categories", "None"),
                            values = c("Transcription factors" = "orange", "Genes of interest" = "purple", "Both categories" = "yellow", "None" = "green")) +
-        # scale_color_manual(values = unlist(ggcolors[[LIST_LEVEL]][[i]]),
-        #                    limits = force) + # define colors with ggcolors
-        # theme(legend.position = "bottom") + # it doesn't work with ggplotly
-          ggtitle(paste0(names(network_plots[[LIST_LEVEL]][i]), " enriched ", list_plot, " ", ont_plot))
+        ggtitle(paste0(names(network_plots[[LIST_LEVEL]][i]), " enriched ", list_plot, " ", ont_plot))
         plt[[LIST_LEVEL]][[i]] <- as_widget(ggplotly(p_nt_int,
                                               height = 600,
                                               width = 600))
@@ -431,7 +503,7 @@ if (length(network_plots[[LIST_LEVEL]]) != 0) {
 
 ### Wordclouds by words
 
-```{bash, engine.opts='-l', results='hide'}
+```{bash, eval=!grepl("GSEA", LIST_LEVEL), include=!grepl("GSEA", LIST_LEVEL), engine.opts='-l', results='hide'}
 # remove wordclouds directory
 rm -r wordclouds
 # create wordclouds directory
@@ -453,7 +525,7 @@ head -n 4
 
 Create the text for the wordcloud graph.
 
-```{r}
+```{r, eval=!grepl("GSEA", LIST_LEVEL), include=!grepl("GSEA", LIST_LEVEL)}
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   # create data.frame with GO term frequency
   wcdf <- read.table(text = enrichment_list[[LIST_LEVEL]][[i]]$GeneRatio,
@@ -482,7 +554,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
 
 EXPLICAR
 
-```{bash, message = FALSE, results='hide'}
+```{bash, eval=!grepl("GSEA", LIST_LEVEL), include=!grepl("GSEA", LIST_LEVEL), message = FALSE, results='hide'}
 for file in wordclouds/*.tsv;
 do
 cat $file |
@@ -509,7 +581,7 @@ done
 
 EXPLICAR
 
-```{r, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
+```{r, eval=!grepl("GSEA", LIST_LEVEL), include=!grepl("GSEA", LIST_LEVEL), fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
 # load all the variables for wc
 filenames <- list.files(paste0(SOURCE_DIR, "Rmd/wordclouds"),
                         pattern = "*.wc",
@@ -539,13 +611,13 @@ for (i in 1:length(ldf)) {
 
 Remove temporal wordcloud data
 
-```{bash}
+```{bash, eval=!grepl("GSEA", LIST_LEVEL), include=!grepl("GSEA", LIST_LEVEL)}
 rm -r wordclouds
 ```
 
 ### Wordclouds by terms
 
-```{r, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
+```{r, eval=!grepl("GSEA", LIST_LEVEL), include=!grepl("GSEA", LIST_LEVEL), fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   wcdf <- read.table(text = enrichment_list[[LIST_LEVEL]][[i]]$GeneRatio,
                      sep = "/")[1]

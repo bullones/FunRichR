@@ -137,10 +137,10 @@ EXPERIMENT = 1
 
 # if your experiment is type 3, uncomment next lines
 # second condition
-FIRST_COND = "AS"
-SECOND_COND = "TS"
+# FIRST_COND = "AS"
+# SECOND_COND = "TS"
 # number of column with the Fold Change information
-COLFC = 3
+# COLFC = 3
 # /////////////////////////
 
 
@@ -261,18 +261,16 @@ NCLUST_USER = 0
 # ////////////////////////////
 
 
-# %%%%%%%%%%%%%%%%%%%%%%
-# ENRICHMENT FACTOR ####
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# MAXIMUM PROCESSES TO PLOT ####
 #
-# In order to set a limit to plot the terms with more genes involved, you need to provide a ENRICH_FACTOR to make those calculations. Bigger value implies more terms to plot. Optimal margin: 50-200.
-#                            Genes analysed
-# Min genes to be plotted = ----------------
-#                            ENRICH_FACTOR
+# You need to set the maximum number of processes to be plotted. Too large a value will cause problems when plotting the graphs. GSEA results will have up to twice as many processes as over-enrichment and KEGGs.
+#
 # Example:
-#   ENRICH_FACTOR = 100
+#   MAX_PLOT = 100
 
-ENRICH_FACTOR = 100
-# //////////////////////
+MAX_PLOT = 100
+# //////////////////////////////
 
 
 # %%%%%%%%%%%%%%%%%%%%%%

@@ -10,7 +10,8 @@ for (i in 1:length(genes_list_arab_gsea)) {
                ont = ONT,
                keyType = KEYTYPE,
                nPermSimple = N_PERM,
-               minGSSize = MIN_GSSIZE_GSEA,
+               minGSSize = MIN_GSSIZE,
+               maxGSSize = MAX_GSSIZE,
                pvalueCutoff = P_CUTOFF,
                verbose = VERBOSE,
                OrgDb = organism,
@@ -23,6 +24,8 @@ for (i in 1:length(genes_list_arab_gsea)) {
   if (empty == FALSE) {
     name <- names(genes_list_arab_gsea)[i]
     enrichment_list[[LIST_LEVEL]][[name]] <- tmp
+    # save number of genes analysed in a vector
+    number_genes_enrichment[[LIST_LEVEL]][[name]] <- length(genes_list_arab_gsea[[i]])
   } else {
     message(paste0("0 enrichment terms found for ", names(genes_list_arab_gsea)[i]))
   }
@@ -44,203 +47,6 @@ for (i in 1:length_loop) {
 }
 ```
 
-### Assign TF and colors
-
-Check transcription factor in the enrichment list if necessary.
-
-```{r, eval=ctf==TRUE, include=ctf==TRUE}
-# create list for ggcolors
-ggcolors <- list()
-ggcolors[[LIST_LEVEL]] <- list()
-for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
-  # keep result field for each element in the list
-  tmp <- enrichment_list[[LIST_LEVEL]][[i]]@result
-  # add new column to save TF results
-  enrichment_list[[LIST_LEVEL]][[i]]@result$TF <- NA
-  name <- names(enrichment_list[[LIST_LEVEL]][i])
-  ggcolors[[LIST_LEVEL]][[name]] <- list()
-  for (j in 1:length(rownames(tmp))) {
-    # get j geneID and compare it with the TF list
-    tmp2 <- tmp[j,]$core_enrichment
-    tmp2 <- unlist(strsplit(tmp2, "/"))
-    tmp3 <- merge(x = as.data.frame(tmp2),
-                  y = tf,
-                  by.x = 1,
-                  by.y = 2)
-    tmp3 <- unique(tmp3[, -2])
-    tmp3 <- tmp3$Family
-    tmp3 <- tmp3[order(tmp3)]
-    # add those TF to the enrichment object
-    if (is_empty(tmp3) == FALSE) {
-      tmp3 <- paste0(tmp3, collapse = "/")
-      enrichment_list[[LIST_LEVEL]][[i]]@result$TF[[j]] <- tmp3
-      ggcolors[[LIST_LEVEL]][[i]] <- append(ggcolors[[LIST_LEVEL]][[i]], "red")
-    } else ggcolors[[LIST_LEVEL]][[i]] <- append(ggcolors[[LIST_LEVEL]][[i]], "#0099f9")
-  } #end for j
-  names(ggcolors[[LIST_LEVEL]][[i]]) <- tmp$Description
-} #end for i
-```
-
-Represent the TF families found with a barplot.
-
-```{r, eval=ctf==TRUE, include=ctf==TRUE}
-# barplot with the TF families found
-plt <- htmltools::tagList()
-plt[[LIST_LEVEL]] <- htmltools::tagList()
-for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
-  tf_all <- enrichment_list[[LIST_LEVEL]][[i]]@result$TF
-  tf_all <- na.omit(tf_all)
-  # filter results to keep only significants
-  tf_filt <- enrichment_list[[LIST_LEVEL]][[i]]@result
-  tf_filt <- tf_filt[tf_filt$p.adjust <= P_CUTOFF,]
-  tf_filt <- tf_filt[tf_filt$qvalue <= Q_CUTOFF,]
-  tf_filt <- tf_filt$TF
-  tf_filt <- na.omit(tf_filt)
-  
-  if ((!is_empty(tf_all) && !is_empty(tf_filt)) == TRUE) {
-    tf_all <- unlist(strsplit(tf_all, "/"))
-    tf_filt <- unlist(strsplit(tf_filt, "/"))
-    tf_all <- table(tf_all)
-    tf_filt <- table(tf_filt)
-    tf_merge <- merge(x = as.data.frame(tf_all),
-                      y = as.data.frame(tf_filt),
-                      by = 1,
-                      all = TRUE)
-    colnames(tf_merge) <- c("family", "total", "filtered")
-    # reshape the dataframe to use ggplot with it
-    library(reshape2)
-    tf_ggdata <- melt(tf_merge[, c('family', 'total', 'filtered')],
-                      id.vars = 1)
-    
-    bp <- ggplot(tf_ggdata, aes(x = value, y = family, fill = variable)) +
-          geom_bar(stat = "identity", position = "dodge") +
-          scale_fill_manual(values = c("#595959", "red")) + # define colors
-          theme_classic() +
-          ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i]),
-                         " transcription factors (",
-                         ONT, ")")) +
-          theme(legend.position = "bottom",
-                legend.title = element_blank(),
-                axis.title.x = element_text(margin = margin(t = 20, r = 0, b = 0, l = 0)),
-                axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0))) + # margins axis
-          xlab("Number of TF in biological processes") +
-          ylab("TF family")
-    plt[[LIST_LEVEL]][[i]] <- as_widget(ggplotly(bp))
-    } else message(paste0("0 transcription factors found for ",
-                          names(enrichment_list[[LIST_LEVEL]][i])))
-} # end for i
-
-# remove useless variables
-rm(tf_all, tf_filt, tf_merge, tf_ggdata)
-```
-
-```{r, echo=FALSE}
-plt
-```
-
-### Dotplot
-
-```{r, fig.show = "hold", out.width = "50%", fig.height=10, fig.width=5}
-for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
-  tmp <- enrichment_list[[LIST_LEVEL]][[i]]
-  tmp2 <- abs(tmp$enrichmentScore) >= MIN_SCORE
-  if (!any(tmp2)) {
-    next
-  } # end if
-  tmp <- tmp[tmp2]$Description
-  
-  # dotplot
-  p_dp <- dotplot(enrichment_list[[LIST_LEVEL]][[i]],
-                    showCategory = tmp, # seleccionamos cuántos procesos
-                    font.size = 6,
-                    label_format = 80) + # sets wrap length
-      ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i]), " GSEA (", ONT, ")")) +
-      theme(plot.title = element_text(hjust = 0.9))
-    
-    print(p_dp)
-}
-```
-
-### Network
-
-```{r, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
-network_plots <- list()
-network_plots[[LIST_LEVEL]] <- list()
-for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
-  tmp <- enrichment_list[[LIST_LEVEL]][[i]]
-  tmp2 <- abs(tmp$enrichmentScore) >= MIN_SCORE
-  if (!any(tmp2)) {
-    next
-  } # end if
-  tmp <- tmp[tmp2]$Description
-  
-  # network
-  p_nt <- emapplot(pairwise_termsim(enrichment_list[[LIST_LEVEL]][[i]]),
-                     showCategory = length(tmp), # seleccionamos cuántos procesos
-                     # cex_label_category = 0.5, # tamaño etiquetas nodos
-                     node_label = "none") + # quitar etiquetas 
-            ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i]), " GSEA (", ONT, ")"))
-    
-    print(p_nt)
-    
-    network_plots[[LIST_LEVEL]][[names(enrichment_list[[LIST_LEVEL]][i])]] <- p_nt
-}
-```
-
-### Interactive network
-
-```{r, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
-plt <- htmltools::tagList()
-plt[[LIST_LEVEL]] <- htmltools::tagList()
-
-if (exists("ggcolors") == TRUE) {
-for (i in 1:length(network_plots[[LIST_LEVEL]])) {
-  p_nt_int <- ggplot(network_plots[[LIST_LEVEL]][[i]]$data,
-                       aes(x = x, y = y, name = name)) +
-      geom_point(aes(color = name), size = 2) +
-    scale_color_manual(values = unlist(ggcolors[[LIST_LEVEL]][[i]]),
-                       limits = force) + # define colors
-    theme(legend.position = "none") +
-      ggtitle(paste0(names(network_plots[[LIST_LEVEL]][i]), " GSEA (", ONT, ")"))
-    plt[[LIST_LEVEL]][[i]] <- as_widget(ggplotly(p_nt_int,
-                                          height = 600,
-                                          width = 600))
-}
-} else {
-  p_nt_int <- ggplot(network_plots[[LIST_LEVEL]][[i]]$data,
-                       aes(x = x, y = y, name = name)) +
-      geom_point(aes(color = name), size = 2) +
-    theme(legend.position = "none") +
-      ggtitle(paste0(names(network_plots[[LIST_LEVEL]][i]), " GSEA (", ONT, ")"))
-    plt[[LIST_LEVEL]][[i]] <- as_widget(ggplotly(p_nt_int,
-                                          height = 600,
-                                          width = 600))
-}
-```
-
-```{r, echo=FALSE, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
-plt
-```
-
-### Wordclouds by terms
-
-```{r, fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6}
-for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
-  wcdf <- as.data.frame(enrichment_list[[LIST_LEVEL]][[i]]$setSize)
-  names(wcdf)[1] <- "setSize"
-  # add GO term column
-  wcdf$term <- enrichment_list[[LIST_LEVEL]][[i]][,2]
-  # calculate MIN.FREQ
-  MIN_FREQ <- max(wcdf$setSize)/9 # aquí defino el 9 a mano
-  wordcloud(words = wcdf$term,
-            freq = wcdf$setSize,
-            scale = c(.8, .3),
-            random.order = FALSE,
-            rot.per = 0, # % of vertical words
-            min.freq = MIN_FREQ,
-            max.words = Inf,
-            colors = brewer.pal(8, "Dark2")[-(1:2)])
-  title(names(enrichment_list[[LIST_LEVEL]][i]), line = 2)
-}
+```{r, child='12_Plots.Rmd'}
 ```
 

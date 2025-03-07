@@ -4,6 +4,8 @@ genes <- read.table(file = paste0(WD_DIR, FILE),
                     sep = "\t",
                     header = TRUE,
                     check.names = FALSE) # avoid R to modify colnames
+# save all genes for GSEA analyses
+genes_gsea <- genes
 ```
 
 ```{r format_1, eval=EXPERIMENT==1, include=EXPERIMENT==1}
