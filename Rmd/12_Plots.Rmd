@@ -214,7 +214,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
 warning("Be careful with the interpretation of treeplots: if there are more than 10 clusters, the processes might be wrong placed")
 ```
 
-```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.22*height_plots), fig.width=18, warning=FALSE, message=FALSE}
+```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.22*height_plots), fig.width=18, warning=FALSE}
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   tmp2 <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
