@@ -105,5 +105,7 @@ rm(genes)
 ort <- read.table(file = ORTHOLOGY_FILE,
                   sep = "\t",
                   header = TRUE)
+# keep only study and reference reference columns (in that order)
+ort <- ort[, c(STUDY_COLUMN, REFERENCE_COLUMN)]
 ```
 

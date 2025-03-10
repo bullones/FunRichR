@@ -59,9 +59,7 @@ Other configuration variables
 
 ```{r}
 SEED <- 8                     # set seed for plots
-P_ADJUST_METHOD <- "none"     # p adjust method for enrichGO function
-MIN_GSSIZE <- 10              # minimal size of genes annotated for testing
-MAX_GSSIZE <- 500             # maximal size of genes annotated for testing
+MIN_GSSIZE <- 5              # minimal size of genes annotated for testing
 VERBOSE <- FALSE              # show or hide GSEA messages
 TO_TYPE <- "ENTREZID"         # output ID type for KEGG analysis
 KEYTYPE_KEGG <- "ncbi-geneid" # input ID for enrichKEGG() function using ENTREZID
@@ -130,9 +128,8 @@ Organism for enrichment | `r organism`
 Organism for KEGG pathways | `r kegg_organism`
 Keytype of input gene for enrichment | `r KEYTYPE`
 Adjusted pvalue cutoff for enrichment | `r P_CUTOFF`
+Qvalue cutoff for enrichment | `r Q_CUTOFF`
 Method for adjuted pvalue for enrichment | `r P_ADJUST_METHOD`
-Minimal size of genes for enrichment | `r MIN_GSSIZE`
-Maximal size of genes for enrichment | `r MAX_GSSIZE`
 Maximum processes to plot | `r MAX_PLOT`
 Output id type for conversion to KEGG ids | `r TO_TYPE`
 Keytype of input gene for KEGG | `r KEYTYPE_KEGG`
@@ -168,9 +165,12 @@ kable(f,
 rm(genes_list_no_empt, tmp)
 ```
 
-# Orthology (if needed)
-
-Prepare IDs to be analised. Convert `r ORG_ORIG` identifiers in `r ORG_ENRICH` best hit.
+```{r, echo=FALSE, results='asis'}
+if (!MODEL_REFERENCE) {
+  cat("# Orthology\n")
+  cat("Prepare IDs to be analised. Convert ",ORG_ORIG, " identifiers in ",ORG_ENRICH, " best hit.\n")
+}
+```
 
 ```{r ortologs, eval=MODEL_REFERENCE==FALSE, include=MODEL_REFERENCE==FALSE, warning=FALSE, message=FALSE, fig.show = "hold", out.width = "50%"}
 # creamos una lista
@@ -466,6 +466,7 @@ Analyse each of the three GO hierarchies.
 
 ```{r}
 ONT <- "BP"
+MAX_GSSIZE <- 30*MIN_GSSIZE
 ```
 
 ```{r GO-BP, child='Rmd/10_GO-enrichment.Rmd'}
@@ -475,6 +476,7 @@ ONT <- "BP"
 
 ```{r}
 ONT <- "MF"
+MAX_GSSIZE <- 20*MIN_GSSIZE
 ```
 
 ```{r GO-MF, child='Rmd/10_GO-enrichment.Rmd'}
@@ -484,17 +486,19 @@ ONT <- "MF"
 
 ```{r}
 ONT <- "CC"
+MAX_GSSIZE <- 30*MIN_GSSIZE
 ```
 
 ```{r GO-CC, child='Rmd/10_GO-enrichment.Rmd'}
 ```
 
-## KEGG pathways enrichment {.tabset .tabset-pills .tabset-fade}
+# KEGG pathways enrichment {.tabset .tabset-pills .tabset-fade}
 
 KEGG pathways enrichment calculations
 
 ```{r over_representation_KEGG, warning=FALSE, message=FALSE}
 LIST_LEVEL <- "kegg"
+MAX_GSSIZE <- 20*MIN_GSSIZE
 enrichment_list[[LIST_LEVEL]] <- list()
 number_genes_enrichment[[LIST_LEVEL]] <- list()
 
@@ -553,7 +557,7 @@ if (!check_KEGG) {
 ```{r, eval=check_KEGG, child='Rmd/12_Plots.Rmd'}
 ```
 
-## GSEA enrichment {.tabset .tabset-pills .tabset-fade}
+# GSEA enrichment
 
 Only available for RSeqFlow output right now.
 

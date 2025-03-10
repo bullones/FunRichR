@@ -59,7 +59,12 @@ Gene set enrichment analyse each of the three GO hierarchies.
 ## Biological Process {.tabset .tabset-pills .tabset-fade}
 
 ```{r}
+P_CUTOFF <- P_CUTOFF/10
+```
+
+```{r}
 ONT <- "BP"
+MAX_GSSIZE <- 30*MIN_GSSIZE
 ```
 
 ```{r GSEA-BP, child='21_GSEA-enrichment.Rmd'}
@@ -69,6 +74,7 @@ ONT <- "BP"
 
 ```{r}
 ONT <- "MF"
+MAX_GSSIZE <- 20*MIN_GSSIZE
 ```
 
 ```{r GSEA-MF, child='21_GSEA-enrichment.Rmd'}
@@ -78,6 +84,7 @@ ONT <- "MF"
 
 ```{r}
 ONT <- "CC"
+MAX_GSSIZE <- 30*MIN_GSSIZE
 ```
 
 ```{r GSEA-CC, child='21_GSEA-enrichment.Rmd'}

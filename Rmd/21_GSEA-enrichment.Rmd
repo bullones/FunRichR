@@ -47,6 +47,58 @@ for (i in 1:length_loop) {
 }
 ```
 
+### Histogram
+
+```{r}
+# get maximum enrichment for the process
+max_enrich <- c()
+for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
+  max_enrich <- append(max_enrich, (nrow(enrichment_list[[LIST_LEVEL]][[i]])))
+}
+max_enrich <- max(max_enrich)
+# check if there are more enriched genes that those to be plotted
+if (max_enrich > MAX_PLOT) {
+  height_plots <- MAX_PLOT
+} else {
+  height_plots <- max_enrich
+}
+# minimum height of 25px
+if (height_plots<25){
+  height_plots <- 25
+}
+```
+
+```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.19*height_plots), fig.width=7}
+if (!is.null(enrichment_list[[LIST_LEVEL]])) {
+  for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
+    tmp <- enrichment_list[[LIST_LEVEL]][[i]]
+    tmp2 <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+    tmp2 <- tmp2[order(tmp2$NES, decreasing = TRUE), ]
+    if (nrow(tmp2) < MAX_PLOT) {
+        MAX_PLOT <- floor(nrow(tmp2)/2)
+        message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
+      } else {# end if nrow(tmp)
+        MAX_PLOT <- MAX_PLOT/2
+      }
+    l <- length(tmp2$Description)
+    max_min <- c(1:MAX_PLOT, (l-MAX_PLOT + 1):l)
+    
+    plt <- ggplot(tmp2[max_min, ],
+                  aes(y = NES, x = Description)) +
+      coord_flip() +
+      geom_bar(stat = "identity",
+               fill = c(rep("#3E7FB9", MAX_PLOT), rep("#DD6360", MAX_PLOT))) +
+      scale_x_discrete(limits = tmp2[max_min, ]$Description) +
+      theme_minimal() +
+      ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i])))
+    print(plt)
+    MAX_PLOT <- MAX_PLOT.BK
+  }
+} else {
+  message(LIST_LEVEL, " has no enriched terms, so histogram will be skipped")
+}
+```
+
 ```{r, child='12_Plots.Rmd'}
 ```
 
