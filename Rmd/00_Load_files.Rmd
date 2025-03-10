@@ -97,7 +97,7 @@ rm(genes, tmp_up, tmp_down)
 ```{r format_4, eval=EXPERIMENT==4, include=EXPERIMENT==4}
 # format the data ####
 genes_list <- list()
-genes_list[["1"]] <- genes
+genes_list[["gene_list"]] <- genes
 rm(genes)
 ```
 
