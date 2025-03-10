@@ -155,11 +155,13 @@ EXPERIMENT = 1
 
 ORTHOLOGY_FILE = "~/datos_bullones/Bioinformatica/ortologia/picual-arabidopsis_new_ort/picual-tair10/results/best_hit_two-way_picual_tair10.tsv"
 
-# In case your study organism is not a model organism, uncomment REFERENCE_COLUMN and specify the column to read with the reference organism
+# In case your study organism is not a model organism, uncomment REFERENCE_COLUMN and STUDY_COLUMN to specify the column to read with the reference and the study organisms
 # Example:
 #   REFERENCE_COLUMN = 2
+#   STUDY_COLUMN = 1
 
 REFERENCE_COLUMN = 2
+STUDY_COLUMN = 1
 
 # Choose the ID source (TAIR, ENTREZID, SYMBOL, ENSEMBL, etc)
 # Example:
@@ -225,6 +227,17 @@ SHOW_CODE = TRUE
 
 DO_REMOVE_DUPS = TRUE
 # /////////////////////////////////////
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# P-VALUE ADJUSTMENT METHOD ####
+#
+# You must specify the P-value adjustment method. Available options are: "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
+# Example:
+#   P_ADJUST_METHOD = "none"
+
+P_ADJUST_METHOD = "BH"
+# //////////////////////////
 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%
