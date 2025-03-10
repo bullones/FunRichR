@@ -1,6 +1,6 @@
 # FunRichR
 
-Explicación de lo que hace el script.
+
 
 ***
 
@@ -23,7 +23,7 @@ Then you can navigate inside _FunRichR_ using shell comands or window interface.
 The GitHub repository and your local version will contain the following files and folders:
 
 - `README.md`: this file
-- 
+-
 
 ***
 
