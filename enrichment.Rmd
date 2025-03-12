@@ -281,10 +281,6 @@ for (i in 1:length(genes_unique))
 genes_list_arab <- l
 ```
 
-```{r}
-knit_exit()
-```
-
 ```{r change_names}
 # change names for constrasts
 if (any(grepl("\\)-\\(", names(genes_list_arab)))) {
