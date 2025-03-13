@@ -87,10 +87,25 @@ rm(genes, tmp)
 # format the data ####
 allContrasts <- paste0(FIRST_COND, ".", SECOND_COND)
 genes_list <- list()
-tmp_up <- genes[genes[COLFC] > 0, ]
-tmp_down <- genes[genes[COLFC] < 0, ]
+
+# check if GSEA analyses will be performed
+if (exists("DEG_OE")) {
+  DO_GSEA_3 <- TRUE
+  # extract DEGs for the over-enrichment analyses
+  tmp <- read.table(file = DEG_OE,
+                    sep = "\t",
+                    header = FALSE,
+                    check.names = FALSE) # avoid R to modify colnames
+  tmp <- genes[genes[[1]] %in% tmp[[1]], ]
+} else {
+  DO_GSEA_3 <- FALSE
+  tmp <- genes
+}
+tmp_up <- tmp[tmp[COLFC] > 0, ]
+tmp_down <- tmp[tmp[COLFC] < 0, ]
 genes_list[[paste0(allContrasts, "_up")]] <- tmp_up[, 1]
 genes_list[[paste0(allContrasts, "_down")]] <- tmp_down[, 1]
+
 rm(genes, tmp_up, tmp_down)
 ```
 

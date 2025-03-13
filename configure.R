@@ -137,10 +137,14 @@ EXPERIMENT = 1
 
 # if your experiment is type 3, uncomment next lines
 # second condition
-# FIRST_COND = "AS"
-# SECOND_COND = "TS"
+FIRST_COND = "AI15"
+SECOND_COND = "CC15"
 # number of column with the Fold Change information
-# COLFC = 3
+COLFC = 3
+
+# if your experiment is type 3 and you want to perform GSEA analyses, you must provide a full datatable with all the expressed genes and their log(foldchange) values (FILE), and a DEG list for the over-enrichment analyses (DEG-OE). Uncomment next line
+DEG_OE = "~/datos_bullones/Bioinformatica/depurar/DEGs.txt"
+
 # /////////////////////////
 
 

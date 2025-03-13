@@ -559,9 +559,7 @@ if (!check_KEGG) {
 
 # GSEA enrichment
 
-Only available for RSeqFlow output right now.
-
-```{r, eval=EXPERIMENT==1, child='Rmd/20_do-GSEA.Rmd'}
+```{r, eval=(EXPERIMENT==1 || DO_GSEA_3), child='Rmd/20_do-GSEA.Rmd'}
 ```
 
 # Save data
