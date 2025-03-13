@@ -278,6 +278,18 @@ NCLUST_USER = 0
 # ////////////////////////////
 
 
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# MINIMUM NUMBER OF GENES TO PLOT ####
+#
+# You need to set the minimum number of genes for a process to be plotted. You can set it to 0 if you want to plot the process regardless the number or genes. This parameter will only be applied to over-enrichment analyses.
+#
+# Example:
+#   MIN_GENES = 0
+
+MIN_GENES = 5
+# ////////////////////////////////////
+
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # MAXIMUM PROCESSES TO PLOT ####
 #

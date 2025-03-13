@@ -130,6 +130,7 @@ Keytype of input gene for enrichment | `r KEYTYPE`
 Adjusted pvalue cutoff for enrichment | `r P_CUTOFF`
 Qvalue cutoff for enrichment | `r Q_CUTOFF`
 Method for adjuted pvalue for enrichment | `r P_ADJUST_METHOD`
+Minimum number of genes for a process to be plotted | `r MIN_GENES`
 Maximum processes to plot | `r MAX_PLOT`
 Output id type for conversion to KEGG ids | `r TO_TYPE`
 Keytype of input gene for KEGG | `r KEYTYPE_KEGG`
@@ -559,7 +560,7 @@ if (!check_KEGG) {
 
 # GSEA enrichment
 
-```{r, eval=(EXPERIMENT==1 || DO_GSEA_3), child='Rmd/20_do-GSEA.Rmd'}
+```{r, eval=(EXPERIMENT==1 || (exists("DO_GSEA_3") && DO_GSEA_3)), child='Rmd/20_do-GSEA.Rmd'}
 ```
 
 # Save data

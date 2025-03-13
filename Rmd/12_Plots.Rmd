@@ -11,7 +11,6 @@ if (LIST_LEVEL!="kegg"){
 MAX_PLOT.BK <- MAX_PLOT
 ```
 
-
 ```{r, eval=!grepl("GSEA", LIST_LEVEL), include=!grepl("GSEA", LIST_LEVEL)}
 # get TopGO
 COUNTBG_CUTOFF <- 0.25
@@ -230,6 +229,8 @@ if (grepl("kegg", LIST_LEVEL)) {
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   tmp2 <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  # filter by MIN_GENES
+  tmp2 <- tmp2[tmp2$Count >= MIN_GENES, ]
   # check if there are enough terms to be plotted
   if (nrow(tmp2) < MAX_PLOT) {
     MAX_PLOT <- nrow(tmp2)
@@ -320,6 +321,8 @@ warning("Be careful with the interpretation of treeplots: if there are more than
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   tmp2 <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  # filter by MIN_GENES
+  tmp2 <- tmp2[tmp2$Count >= MIN_GENES, ]
   # check if there are enough terms to be plotted
   if (nrow(tmp2) < MAX_PLOT) {
     MAX_PLOT <- nrow(tmp2)
@@ -418,6 +421,8 @@ network_plots[[LIST_LEVEL]] <- list()
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   tmp2 <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  # filter by MIN_GENES
+  tmp2 <- tmp2[tmp2$Count >= MIN_GENES, ]
   # check if there are enough terms to be plotted
   if (nrow(tmp2) < MAX_PLOT) {
     MAX_PLOT <- nrow(tmp2)

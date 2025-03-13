@@ -37,7 +37,7 @@ for (i in 2:ncol(genes_gsea)) {
 rm(keep, genes_gsea)
 ```
 
-```{r prepare-gsea_3, eval=DO_GSEA_3, include=DO_GSEA_3}
+```{r prepare-gsea_3, eval=(exists("DO_GSEA_3") && DO_GSEA_3), include=(exists("DO_GSEA_3") && DO_GSEA_3)}
 # We keep the log2(foldchange) column from genes_gsea
 genes_gsea <- genes_gsea[, c(1, COLFC)]
 # remove NA values
