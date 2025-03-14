@@ -25,6 +25,11 @@ for (i in 1:length(genes_list_arab))
                    readable = FALSE,
                    pool = FALSE)
   
+  if (DO_REMOVE_PARENTS) {
+    # temp <- gofilter(temp, level = 4)
+    temp <- simplify(temp, cutoff = 0.7, by = "p.adjust", select_fun = min)
+  }
+  
   temp@result$CountBg <- temp@result$Count / as.numeric(gsub("/.*", "",temp@result$BgRatio))
   
   # check if there was enrichment
@@ -111,7 +116,11 @@ save_enriched_genes <- save_enriched_genes[, c(4, 1, 3, 2)]
 write.table(save_enriched_genes,
             file = paste0(SUB_DIR,
                           LIST_LEVEL,
-                          "_genes_arabidopsis_picual.tsv"),
+                          "_genes_",
+                          tolower(gsub("ID_", "", ORG_ENRICH)),
+                          "_",
+                          tolower(gsub("ID_", "", ORG_ORIG)),
+                          ".tsv"),
             quote = FALSE,
             sep = "\t",
             row.names = FALSE)

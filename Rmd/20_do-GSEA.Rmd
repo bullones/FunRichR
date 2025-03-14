@@ -90,7 +90,9 @@ P_CUTOFF <- P_CUTOFF/10
 
 ```{r}
 ONT <- "BP"
-MAX_GSSIZE <- 30*MIN_GSSIZE
+MAX_GSSIZE <-  ifelse (MAX_GSSIZE_USER == 0,
+                       30*MIN_GSSIZE,
+                       MAX_GSSIZE_USER)
 ```
 
 ```{r GSEA-BP, child='21_GSEA-enrichment.Rmd'}
@@ -100,7 +102,9 @@ MAX_GSSIZE <- 30*MIN_GSSIZE
 
 ```{r}
 ONT <- "MF"
-MAX_GSSIZE <- 20*MIN_GSSIZE
+MAX_GSSIZE <-  ifelse (MAX_GSSIZE_USER == 0,
+                       20*MIN_GSSIZE,
+                       MAX_GSSIZE_USER)
 ```
 
 ```{r GSEA-MF, child='21_GSEA-enrichment.Rmd'}
@@ -110,7 +114,9 @@ MAX_GSSIZE <- 20*MIN_GSSIZE
 
 ```{r}
 ONT <- "CC"
-MAX_GSSIZE <- 30*MIN_GSSIZE
+MAX_GSSIZE <-  ifelse (MAX_GSSIZE_USER == 0,
+                       30*MIN_GSSIZE,
+                       MAX_GSSIZE_USER)
 ```
 
 ```{r GSEA-CC, child='21_GSEA-enrichment.Rmd'}

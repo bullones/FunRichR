@@ -59,7 +59,9 @@ Other configuration variables
 
 ```{r}
 SEED <- 8                     # set seed for plots
-MIN_GSSIZE <- 5              # minimal size of genes annotated for testing
+MIN_GSSIZE <-  ifelse (MIN_GSSIZE_USER == 0,
+                       5,
+                       MIN_GSSIZE_USER) # minimal size of genes annotated for testing
 VERBOSE <- FALSE              # show or hide GSEA messages
 TO_TYPE <- "ENTREZID"         # output ID type for KEGG analysis
 KEYTYPE_KEGG <- "ncbi-geneid" # input ID for enrichKEGG() function using ENTREZID
@@ -467,7 +469,9 @@ Analyse each of the three GO hierarchies.
 
 ```{r}
 ONT <- "BP"
-MAX_GSSIZE <- 30*MIN_GSSIZE
+MAX_GSSIZE <-  ifelse (MAX_GSSIZE_USER == 0,
+                       30*MIN_GSSIZE,
+                       MAX_GSSIZE_USER)
 ```
 
 ```{r GO-BP, child='Rmd/10_GO-enrichment.Rmd'}
@@ -477,7 +481,9 @@ MAX_GSSIZE <- 30*MIN_GSSIZE
 
 ```{r}
 ONT <- "MF"
-MAX_GSSIZE <- 20*MIN_GSSIZE
+MAX_GSSIZE <-  ifelse (MAX_GSSIZE_USER == 0,
+                       20*MIN_GSSIZE,
+                       MAX_GSSIZE_USER)
 ```
 
 ```{r GO-MF, child='Rmd/10_GO-enrichment.Rmd'}
@@ -487,7 +493,9 @@ MAX_GSSIZE <- 20*MIN_GSSIZE
 
 ```{r}
 ONT <- "CC"
-MAX_GSSIZE <- 30*MIN_GSSIZE
+MAX_GSSIZE <-  ifelse (MAX_GSSIZE_USER == 0,
+                       30*MIN_GSSIZE,
+                       MAX_GSSIZE_USER)
 ```
 
 ```{r GO-CC, child='Rmd/10_GO-enrichment.Rmd'}
@@ -499,7 +507,9 @@ KEGG pathways enrichment calculations
 
 ```{r over_representation_KEGG, warning=FALSE, message=FALSE}
 LIST_LEVEL <- "kegg"
-MAX_GSSIZE <- 20*MIN_GSSIZE
+MAX_GSSIZE <-  ifelse (MAX_GSSIZE_USER == 0,
+                       20*MIN_GSSIZE,
+                       MAX_GSSIZE_USER)
 enrichment_list[[LIST_LEVEL]] <- list()
 number_genes_enrichment[[LIST_LEVEL]] <- list()
 

@@ -137,13 +137,13 @@ EXPERIMENT = 1
 
 # if your experiment is type 3, uncomment next lines
 # second condition
-FIRST_COND = "AI15"
-SECOND_COND = "CC15"
+# FIRST_COND = "AI15"
+# SECOND_COND = "CC15"
 # number of column with the Fold Change information
-COLFC = 3
+# COLFC = 3
 
 # if your experiment is type 3 and you want to perform GSEA analyses, you must provide a full datatable with all the expressed genes and their log(foldchange) values (FILE), and a DEG list for the over-enrichment analyses (DEG-OE). Uncomment next line
-DEG_OE = "~/datos_bullones/Bioinformatica/depurar/DEGs.txt"
+# DEG_OE = "~/datos_bullones/Bioinformatica/depurar/DEGs.txt"
 
 # /////////////////////////
 
@@ -204,7 +204,7 @@ TF_FILE = "~/datos_bullones/Bioinformatica/RNA_Seq/muestras_picual_Juande/Olivo4
 # Example:
 #   OTHER_FILE = "~/Documents/important_genes.tsv"
 
-# OTHER_FILE = "~/datos_bullones/Bioinformatica/sequia_olivo_ana/data_26_1_23_both/new_analysis_06-11-23/RSeqFlow1.02_results_2024-01-11_12.52.04_koroneiki_cpm0_fc1.2_p0.05/OutstandingGenes-2024-01-11_12.52.04.tsv"
+OTHER_FILE = "~/datos_bullones/Bioinformatica/sequia_olivo_ana/data_26_1_23_both/new_analysis_06-11-23/RSeqFlow1.02_results_2024-01-11_12.52.04_koroneiki_cpm0_fc1.2_p0.05/OutstandingGenes-2024-01-11_12.52.04.tsv"
 # //////////////////////////
 
 
@@ -288,6 +288,33 @@ NCLUST_USER = 0
 
 MIN_GENES = 5
 # ////////////////////////////////////
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# SIZE OF GENES FOR CLUSTERPROFILER ####
+#
+# You can set the minimal and maximal size of genes annotated for clusterProfiler analyses (over-enrichment, KEGG and GSEA). MINGSSIZE defines the minimum number of genes that a GO term must have to be considered in the analysis, discarding terms that are below. This avoids GO terms with too few genes, which may not be statistically significant or too specific. MAXGSSIZE defines the maximum number of genes that a GO term must have to be considered in the analysis, discarding terms that are above. This filters overly general GO terms (which include many genes). If you set the to 0, they will be automatically calculated.
+#
+# Example:
+#   MIN_GSSIZE_USER = 0
+#   MAX_GSSIZE_USER = 0
+
+MIN_GSSIZE_USER = 0
+MAX_GSSIZE_USER = 0
+# //////////////////////////////////////
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# WILL PARENT OF GO TERMS BE REMOVED? ####
+#
+# You may want to remove GO parent terms, which are more general terms within the GO hierarchy that group together more specific terms (children terms).
+# TRUE: parent terms will be removed
+# FALSE: parent terms will not be removed
+# Example:
+#   DO_REMOVE_PARENTS = TRUE
+
+DO_REMOVE_PARENTS = TRUE
+# ////////////////////////////////////////
 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

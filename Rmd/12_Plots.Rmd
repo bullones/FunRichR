@@ -31,7 +31,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])){
 
 Assign colors to the TF for the ggplot.
 
-```{r, eval=EVAL_TF, include=EVAL_TF}
+```{r, eval=(EVAL_TF && !grepl("GSEA", LIST_LEVEL)), include=(EVAL_TF && !grepl("GSEA", LIST_LEVEL))}
 # edit tf variable to assign colors
 tf_edited <- tf$Gene_ID
 tf_edited <- sort(tf_edited)
@@ -228,18 +228,23 @@ if (grepl("kegg", LIST_LEVEL)) {
 ```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.19*height_plots), fig.width=5}
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
-  tmp2 <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
-  # filter by MIN_GENES
-  tmp2 <- tmp2[tmp2$Count >= MIN_GENES, ]
+  # filter by adjust P and q-value
+  tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  # filter by minimum number of genes
+  tmp@result <- tmp@result[tmp@result$Count >= MIN_GENES, ]
+  # check if we have any process. If not, skip
+  if (!nrow(tmp)) {
+    next
+  } # end if
   # check if there are enough terms to be plotted
-  if (nrow(tmp2) < MAX_PLOT) {
-    MAX_PLOT <- nrow(tmp2)
+  if (nrow(tmp) < MAX_PLOT) {
+    MAX_PLOT <- nrow(tmp)
     message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
   }
   # check if there are enought terms to be plotted with GSEA analyses
   if (grepl("GSEA", LIST_LEVEL)){
-    if (nrow(tmp2) < MAX_PLOT) {
-      MAX_PLOT <- floor(nrow(tmp2)/2)
+    if (nrow(tmp) < MAX_PLOT) {
+      MAX_PLOT <- floor(nrow(tmp)/2)
       message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
     } else {# end if nrow(tmp)
       MAX_PLOT <- MAX_PLOT/2
@@ -247,26 +252,26 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   } # end if GSEA
   # if it's over-enrichment
   if (grepl("OE", LIST_LEVEL)){
-    tmp2_ord <- order(tmp2$CountBg, decreasing = TRUE)[1:MAX_PLOT]
-    tmp2 <- seq_len(nrow(tmp2)) %in% tmp2_ord
+    tmp2 <- order(tmp$CountBg, decreasing = TRUE)[1:MAX_PLOT]
+    tmp2 <- seq_len(nrow(tmp)) %in% tmp2
   } # end if OE
   # if it's KEGG
   if (grepl("kegg", LIST_LEVEL)) {
-    tmp2 <- rep(TRUE, nrow(tmp2))
+    tmp2 <- rep(TRUE, nrow(tmp))
   } # end if KEGG
   # if it's GSEA
   if (grepl("GSEA", LIST_LEVEL)) {
-    tmp2_order <- order(tmp2$NES, decreasing = TRUE)
-    tmp2_order <- c(head(tmp2_order, MAX_PLOT), tail(tmp2_order, MAX_PLOT))
-    tmp2 <- seq_len(nrow(tmp)) %in% tmp2_order
+    tmp2 <- order(tmp$NES, decreasing = TRUE)
+    tmp2 <- c(head(tmp2, MAX_PLOT), tail(tmp, MAX_PLOT))
+    tmp2 <- seq_len(nrow(tmp)) %in% tmp2
   }
   MAX_PLOT <- MAX_PLOT.BK
-  # if no process passes the filter, we plot all of them
-  if (!any(tmp2)) {
-    tmp2 <- tmp$Count >= 0
-  } # end if
+  # # if no process passes the filter, we plot all of them
+  # if (!any(tmp2)) {
+  #   tmp2 <- tmp$Count >= 0
+  # } # end if
   # check if we have any process. If not, skip
-  if (!any(tmp2)) {
+  if (all(tmp2 == FALSE)) {
     next
   } # end if
   tmp3 <- tmp[tmp2]$Description
@@ -320,18 +325,23 @@ warning("Be careful with the interpretation of treeplots: if there are more than
 ```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.22*height_plots), fig.width=18, warning=FALSE}
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
-  tmp2 <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
-  # filter by MIN_GENES
-  tmp2 <- tmp2[tmp2$Count >= MIN_GENES, ]
+  # filter by adjust P and q-value
+  tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  # filter by minimum number of genes
+  tmp@result <- tmp@result[tmp@result$Count >= MIN_GENES, ]
+  # check if we have any process. If not, skip
+  if (!nrow(tmp)) {
+    next
+  } # end if
   # check if there are enough terms to be plotted
-  if (nrow(tmp2) < MAX_PLOT) {
-    MAX_PLOT <- nrow(tmp2)
+  if (nrow(tmp) < MAX_PLOT) {
+    MAX_PLOT <- nrow(tmp)
     message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
   }
   # check if there are enought terms to be plotted with GSEA analyses
   if (grepl("GSEA", LIST_LEVEL)){
-    if (nrow(tmp2) < MAX_PLOT) {
-      MAX_PLOT <- floor(nrow(tmp2)/2)
+    if (nrow(tmp) < MAX_PLOT) {
+      MAX_PLOT <- floor(nrow(tmp)/2)
       message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
     } else {# end if nrow(tmp)
       MAX_PLOT <- MAX_PLOT/2
@@ -339,26 +349,26 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   } # end if GSEA
   # if it's over-enrichment
   if (grepl("OE", LIST_LEVEL)){
-    tmp2_ord <- order(tmp2$CountBg, decreasing = TRUE)[1:MAX_PLOT]
-    tmp2 <- seq_len(nrow(tmp2)) %in% tmp2_ord
+    tmp2 <- order(tmp$CountBg, decreasing = TRUE)[1:MAX_PLOT]
+    tmp2 <- seq_len(nrow(tmp)) %in% tmp2
   } # end if OE
   # if it's KEGG
   if (grepl("kegg", LIST_LEVEL)) {
-    tmp2 <- rep(TRUE, nrow(tmp2))
+    tmp2 <- rep(TRUE, nrow(tmp))
   } # end if KEGG
   # if it's GSEA
   if (grepl("GSEA", LIST_LEVEL)) {
-    tmp2_order <- order(tmp2$NES, decreasing = TRUE)
-    tmp2_order <- c(head(tmp2_order, MAX_PLOT), tail(tmp2_order, MAX_PLOT))
-    tmp2 <- seq_len(nrow(tmp)) %in% tmp2_order
+    tmp2 <- order(tmp$NES, decreasing = TRUE)
+    tmp2 <- c(head(tmp2, MAX_PLOT), tail(tmp, MAX_PLOT))
+    tmp2 <- seq_len(nrow(tmp)) %in% tmp2
   }
   MAX_PLOT <- MAX_PLOT.BK
-  # if no process passes the filter, we plot all of them
-  if (!any(tmp2)) {
-    tmp2 <- tmp$Count >= 0
-  } # end if
+  # # if no process passes the filter, we plot all of them
+  # if (!any(tmp2)) {
+  #   tmp2 <- tmp$Count >= 0
+  # } # end if
   # check if we have any process. If not, skip
-  if (!any(tmp2)) {
+  if (all(tmp2 == FALSE)) {
     next
   } # end if
   tmp3 <- tmp[tmp2]$Description
@@ -420,18 +430,23 @@ network_plots <- list()
 network_plots[[LIST_LEVEL]] <- list()
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
-  tmp2 <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
-  # filter by MIN_GENES
-  tmp2 <- tmp2[tmp2$Count >= MIN_GENES, ]
+  # filter by adjust P and q-value
+  tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  # filter by minimum number of genes
+  tmp@result <- tmp@result[tmp@result$Count >= MIN_GENES, ]
+  # check if we have any process. If not, skip
+  if (!nrow(tmp)) {
+    next
+  } # end if
   # check if there are enough terms to be plotted
-  if (nrow(tmp2) < MAX_PLOT) {
-    MAX_PLOT <- nrow(tmp2)
+  if (nrow(tmp) < MAX_PLOT) {
+    MAX_PLOT <- nrow(tmp)
     message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
   }
   # check if there are enought terms to be plotted with GSEA analyses
   if (grepl("GSEA", LIST_LEVEL)){
-    if (nrow(tmp2) < MAX_PLOT) {
-      MAX_PLOT <- floor(nrow(tmp2)/2)
+    if (nrow(tmp) < MAX_PLOT) {
+      MAX_PLOT <- floor(nrow(tmp)/2)
       message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
     } else {# end if nrow(tmp)
       MAX_PLOT <- MAX_PLOT/2
@@ -439,26 +454,26 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   } # end if GSEA
   # if it's over-enrichment
   if (grepl("OE", LIST_LEVEL)){
-    tmp2_ord <- order(tmp2$CountBg, decreasing = TRUE)[1:MAX_PLOT]
-    tmp2 <- seq_len(nrow(tmp2)) %in% tmp2_ord
+    tmp2 <- order(tmp$CountBg, decreasing = TRUE)[1:MAX_PLOT]
+    tmp2 <- seq_len(nrow(tmp)) %in% tmp2
   } # end if OE
   # if it's KEGG
   if (grepl("kegg", LIST_LEVEL)) {
-    tmp2 <- rep(TRUE, nrow(tmp2))
+    tmp2 <- rep(TRUE, nrow(tmp))
   } # end if KEGG
   # if it's GSEA
   if (grepl("GSEA", LIST_LEVEL)) {
-    tmp2_order <- order(tmp2$NES, decreasing = TRUE)
-    tmp2_order <- c(head(tmp2_order, MAX_PLOT), tail(tmp2_order, MAX_PLOT))
-    tmp2 <- seq_len(nrow(tmp)) %in% tmp2_order
+    tmp2 <- order(tmp$NES, decreasing = TRUE)
+    tmp2 <- c(head(tmp2, MAX_PLOT), tail(tmp, MAX_PLOT))
+    tmp2 <- seq_len(nrow(tmp)) %in% tmp2
   }
   MAX_PLOT <- MAX_PLOT.BK
-  # if no process passes the filter, we plot all of them
-  if (!any(tmp2)) {
-    tmp2 <- tmp$Count >= 0
-  } # end if
+  # # if no process passes the filter, we plot all of them
+  # if (!any(tmp2)) {
+  #   tmp2 <- tmp$Count >= 0
+  # } # end if
   # check if we have any process. If not, skip
-  if (!any(tmp2)) {
+  if (all(tmp2 == FALSE)) {
     next
   } # end if
   tmp3 <- tmp[tmp2]$Description
