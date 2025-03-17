@@ -144,7 +144,6 @@ EXPERIMENT = 1
 
 # if your experiment is type 3 and you want to perform GSEA analyses, you must provide a full datatable with all the expressed genes and their log(foldchange) values (FILE), and a DEG list for the over-enrichment analyses (DEG-OE). Uncomment next line
 # DEG_OE = "~/datos_bullones/Bioinformatica/depurar/DEGs.txt"
-
 # /////////////////////////
 
 
@@ -304,17 +303,28 @@ MAX_GSSIZE_USER = 0
 # //////////////////////////////////////
 
 
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# WILL PARENT OF GO TERMS BE REMOVED? ####
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# WILL REDUNDANCY OF GO TERMS BE REMOVED? ####
 #
-# You may want to remove GO parent terms, which are more general terms within the GO hierarchy that group together more specific terms (children terms).
-# TRUE: parent terms will be removed
-# FALSE: parent terms will not be removed
+# You may want to remove redundancy of enriched GO terms.
+# TRUE: redundancy will be removed
+# FALSE: redundancy will not be removed
 # Example:
-#   DO_REMOVE_PARENTS = TRUE
+#   DO_REMOVE_REDUNDANCY = TRUE
 
-DO_REMOVE_PARENTS = TRUE
-# ////////////////////////////////////////
+DO_REMOVE_REDUNDANCY = TRUE
+# ////////////////////////////////////////////
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# WILL GO TERMS BE FILTERED? ####
+#
+# You may want to filter GO enriched results at specific GO level. That way you remove GO parent terms, which are more general terms within the GO hierarchy that group together more specific terms (children terms). Set the GO level you want to filter the enrichment by. Higher values will be closer to the children terms. If you set it to 0, no filter will be applied. Values between 1 and 7.
+# Example:
+#   LEVEL = 4
+
+GO_LEVEL = 4
+# ///////////////////////////////
 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
