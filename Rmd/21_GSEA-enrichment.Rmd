@@ -4,6 +4,7 @@ Analyse the **`r ONT` hierarchy** of GSEA.
 # create sublist for gsea
 LIST_LEVEL <- paste0(ONT, "-GSEA")
 enrichment_list[[LIST_LEVEL]] <- list()
+to_save[[LIST_LEVEL]] <- list()
 # fill the sublist with GSEA results
 for (i in 1:length(genes_list_arab_gsea)) {
   tmp <- gseGO(geneList = genes_list_arab_gsea[[i]],
@@ -17,11 +18,22 @@ for (i in 1:length(genes_list_arab_gsea)) {
                OrgDb = organism,
                pAdjustMethod = P_ADJUST_METHOD)
   
-  # check if there is enrichment
-  empty <- length(tmp$ID) == 0
+  # save before filter
+  if (nrow(tmp)) {
+    name <- names(genes_list_arab_gsea)[i]
+    to_save[[LIST_LEVEL]][[name]] <- tmp
+  }
   
+  # remove GO terms redundancy
+  if (DO_REMOVE_REDUNDANCY) {
+    tmp <- simplify(tmp, cutoff = 0.7, by = "p.adjust", select_fun = min)
+  }
+  # gofilter() CANNOT be applied in GSEA analyses
+  
+  # # check if there is enrichment
+  # empty <- length(tmp$ID) == 0
   # if empty we don't save it on the list
-  if (empty == FALSE) {
+  if (nrow(tmp)) {
     name <- names(genes_list_arab_gsea)[i]
     enrichment_list[[LIST_LEVEL]][[name]] <- tmp
     # save number of genes analysed in a vector

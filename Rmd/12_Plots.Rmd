@@ -31,7 +31,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])){
 
 Assign colors to the TF for the ggplot.
 
-```{r, eval=(EVAL_TF && !grepl("GSEA", LIST_LEVEL)), include=(EVAL_TF && !grepl("GSEA", LIST_LEVEL))}
+```{r, eval=EVAL_TF, include=EVAL_TF}
 # edit tf variable to assign colors
 tf_edited <- tf$Gene_ID
 tf_edited <- sort(tf_edited)
@@ -79,9 +79,10 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
                   y = tf,
                   by.x = 1,
                   by.y = 2)
-    tmp3 <- unique(tmp3[, -2])
+    # tmp3 <- unique(tmp3[, -2])
     tmp3 <- tmp3$Family
     tmp3 <- tmp3[order(tmp3)]
+    tmp3 <- unique(tmp3)
     # add those TF to the enrichment object
     if (!is_empty(tmp3)) {
       tmp3 <- paste0(tmp3, collapse = "|") # we use | instead of / because one of the TF's name has a /
@@ -230,8 +231,13 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   # filter by adjust P and q-value
   tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
-  # filter by minimum number of genes
-  tmp@result <- tmp@result[tmp@result$Count >= MIN_GENES, ]
+  # filter by minimum number of genes (not applied for KEGGs)
+  if (grepl("OE", LIST_LEVEL)) {
+    tmp@result <- tmp@result[tmp@result$Count >= MIN_GENES, ]
+  }
+  if (grepl("GSEA", LIST_LEVEL)) {
+    tmp@result <- tmp@result[tmp@result$setSize >= MIN_GENES, ]
+  }
   # check if we have any process. If not, skip
   if (!nrow(tmp)) {
     next
@@ -241,12 +247,12 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
     MAX_PLOT <- nrow(tmp)
     message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
   }
-  # check if there are enought terms to be plotted with GSEA analyses
+  # check if there are enough terms to be plotted with GSEA analyses
   if (grepl("GSEA", LIST_LEVEL)){
     if (nrow(tmp) < MAX_PLOT) {
       MAX_PLOT <- floor(nrow(tmp)/2)
       message("MAX_PLOT value changed to ", MAX_PLOT, " for ", names(enrichment_list[[LIST_LEVEL]][i]))
-    } else {# end if nrow(tmp)
+    } else {
       MAX_PLOT <- MAX_PLOT/2
     }
   } # end if GSEA
@@ -262,7 +268,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   # if it's GSEA
   if (grepl("GSEA", LIST_LEVEL)) {
     tmp2 <- order(tmp$NES, decreasing = TRUE)
-    tmp2 <- c(head(tmp2, MAX_PLOT), tail(tmp, MAX_PLOT))
+    tmp2 <- c(head(tmp2, MAX_PLOT), tail(tmp2, MAX_PLOT))
     tmp2 <- seq_len(nrow(tmp)) %in% tmp2
   }
   MAX_PLOT <- MAX_PLOT.BK
@@ -327,8 +333,13 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   # filter by adjust P and q-value
   tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
-  # filter by minimum number of genes
-  tmp@result <- tmp@result[tmp@result$Count >= MIN_GENES, ]
+  # filter by minimum number of genes (not applied for KEGGs)
+  if (grepl("OE", LIST_LEVEL)) {
+    tmp@result <- tmp@result[tmp@result$Count >= MIN_GENES, ]
+  }
+  if (grepl("GSEA", LIST_LEVEL)) {
+    tmp@result <- tmp@result[tmp@result$setSize >= MIN_GENES, ]
+  }
   # check if we have any process. If not, skip
   if (!nrow(tmp)) {
     next
@@ -432,8 +443,13 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   # filter by adjust P and q-value
   tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
-  # filter by minimum number of genes
-  tmp@result <- tmp@result[tmp@result$Count >= MIN_GENES, ]
+  # filter by minimum number of genes (not applied for KEGGs)
+  if (grepl("OE", LIST_LEVEL)) {
+    tmp@result <- tmp@result[tmp@result$Count >= MIN_GENES, ]
+  }
+  if (grepl("GSEA", LIST_LEVEL)) {
+    tmp@result <- tmp@result[tmp@result$setSize >= MIN_GENES, ]
+  }
   # check if we have any process. If not, skip
   if (!nrow(tmp)) {
     next

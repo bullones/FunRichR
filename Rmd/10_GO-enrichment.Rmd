@@ -4,6 +4,7 @@ Analyse the **`r ONT` hierarchy** of Gene Ontology.
 # create sublist for over-enrichment analysis
 LIST_LEVEL <- paste0(ONT, "-OE")
 enrichment_list[[LIST_LEVEL]] <- list()
+to_save[[LIST_LEVEL]] <- list()
 number_genes_enrichment[[LIST_LEVEL]] <- list()
 # fill the sublist with over-enrichment results
 for (i in 1:length(genes_list_arab))
@@ -25,18 +26,26 @@ for (i in 1:length(genes_list_arab))
                    readable = FALSE,
                    pool = FALSE)
   
-  if (DO_REMOVE_PARENTS) {
-    # temp <- gofilter(temp, level = 4)
-    temp <- simplify(temp, cutoff = 0.7, by = "p.adjust", select_fun = min)
+  temp@result$CountBg <- temp@result$Count / as.numeric(gsub("/.*", "",temp@result$BgRatio))
+  # save before filter
+  if (nrow(temp)) {
+    name <- names(genes_list_arab)[i]
+    to_save[[LIST_LEVEL]][[name]] <- temp
   }
   
-  temp@result$CountBg <- temp@result$Count / as.numeric(gsub("/.*", "",temp@result$BgRatio))
+  # remove GO terms redundancy
+  if (DO_REMOVE_REDUNDANCY) {
+    temp <- simplify(temp, cutoff = 0.7, by = "p.adjust", select_fun = min)
+  }
+  # filter at specific level
+  if (GO_LEVEL) {
+    temp <- gofilter(temp, level = GO_LEVEL)
+  }
   
-  # check if there was enrichment
-  empty <- length(temp$ID) == 0
-
-  # if it's empty we don't save it in the list
-  if (empty == FALSE)
+  # # check if there was enrichment
+  # empty <- length(temp$ID) == 0
+  # # if it's empty we don't save it in the list
+  if (nrow(temp))
   {
     # save values in the list
     name <- names(genes_list_arab)[i]

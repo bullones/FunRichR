@@ -431,6 +431,8 @@ enrichment_list <- list()
 enrichment_TF <- list()
 # vector to save number genes
 number_genes_enrichment <- list()
+# create a list to save final data
+to_save <- list()
 ```
 
 # Gene Ontology Enrichment
@@ -511,6 +513,7 @@ MAX_GSSIZE <-  ifelse (MAX_GSSIZE_USER == 0,
                        20*MIN_GSSIZE,
                        MAX_GSSIZE_USER)
 enrichment_list[[LIST_LEVEL]] <- list()
+to_save[[LIST_LEVEL]] <- list()
 number_genes_enrichment[[LIST_LEVEL]] <- list()
 
 for (i in 1:length(genes_list_kegg)) {
@@ -522,18 +525,18 @@ for (i in 1:length(genes_list_kegg)) {
                      minGSSize = MIN_GSSIZE,
                      maxGSSize = MAX_GSSIZE)
   
-  # check if there was enrichment
-  empty <- length(temp$ID) == 0
-
+  # # check if there was enrichment
+  # empty <- length(temp$ID) == 0
   # if it's empty we don't save it in the list
-  if (empty == FALSE)
+  if (nrow(temp))
   {
     temp@result$CountBg <- temp@result$Count / as.numeric(gsub("/.*", "",temp@result$BgRatio))
     # save values in the list
     name <- names(genes_list_kegg)[i]
-    enrichment_list$`kegg`[[name]] <- temp
+    enrichment_list[[LIST_LEVEL]][[name]] <- temp
+    to_save[[LIST_LEVEL]][[name]] <- temp
     # save number of genes analysed in a vector
-    number_genes_enrichment$`kegg`[[name]] <- length(genes_list_kegg[[i]]$ENTREZID)
+    number_genes_enrichment[[LIST_LEVEL]][[name]] <- length(genes_list_kegg[[i]]$ENTREZID)
   } else {
     message(paste0("0 KEGG pathways found for ", names(genes_list_kegg)[i]))
   }
@@ -576,23 +579,70 @@ if (!check_KEGG) {
 # Save data
 
 ```{r save_enrichment}
-# save tables
-for(i in 1:length(enrichment_list)) {
-  for(j in 1:length(enrichment_list[[i]])) {
-    write.table(enrichment_list[[i]][[j]],
-                file = paste0(SUB_DIR, names(enrichment_list[i]), "_", names(enrichment_list[[i]][j]), ".tsv"),
-                quote = FALSE,
-                sep = "\t",
-                row.names = FALSE,
-                na = "")
-  }
-}
+# # save filtered tables
+# for(i in 1:length(enrichment_list)) {
+#   for(j in 1:length(enrichment_list[[i]])) {
+#     write.table(enrichment_list[[i]][[j]],
+#                 file = paste0(SUB_DIR, names(enrichment_list[i]), "_", names(enrichment_list[[i]][j]), "_filtered.tsv"),
+#                 quote = FALSE,
+#                 sep = "\t",
+#                 row.names = FALSE,
+#                 na = "")
+#   }
+# }
 
 # save enrichment_list as R object
 saveRDS(enrichment_list,
         file = paste0(SUB_DIR, "enrichment_list.Rds"))
 
 message(paste0("Data was succesfully saved at ", SUB_DIR))
+```
+
+```{r save_original}
+# save original tables
+for(i in 1:length(to_save)) {
+  for(j in names(to_save[[i]])) {
+    # add new column to save TF results
+    if (EVAL_TF) {
+      to_save[[i]][[j]]@result$TF <- NA
+      tmp <- to_save[[i]][[j]]@result
+      for (k in 1:nrow(tmp)) {
+        tmp2 <- tmp[k, ]$geneID
+        # for GSEA the variable it is $core_enrichment
+        if (is.null(tmp2)) {
+          tmp2 <- tmp[k, ]$core_enrichment
+        }
+        tmp2 <- unlist(strsplit(tmp2, "/"))
+        # assign TFs
+        tmp3 <- merge(x = as.data.frame(tmp2),
+                      y = tf,
+                      by.x = 1,
+                      by.y = 2)
+        # add those TFs to the to save object
+        if (nrow(tmp3)) {
+          tmp3 <- tmp3$Family
+          tmp3 <- tmp3[order(tmp3)]
+          tmp3 <- unique(tmp3)
+          tmp3 <- paste0(tmp3, collapse = "|")
+          to_save[[i]][[j]]@result$TF[[k]] <- tmp3
+        }
+      } # end for k
+    } # end if
+    # add new column to save if a GO was filtered or not
+    # check first if we have processes enrichment_list
+    if (j %in% names(enrichment_list[[i]])) {
+      to_save[[i]][[j]]@result$passed_filter <- to_save[[i]][[j]]@result$ID %in% enrichment_list[[i]][[j]]@result$ID
+    }
+    # save table
+    write.table(to_save[[i]][[j]],
+                file = paste0(SUB_DIR, names(to_save[i]), "_", names(to_save[[i]][j]), ".tsv"),
+                quote = FALSE,
+                sep = "\t",
+                row.names = FALSE,
+                na = "")
+  } # end for j
+} # end for i
+
 ```
 
 # About this session
