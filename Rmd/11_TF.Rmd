@@ -6,7 +6,7 @@ Represent the TF families found with a barplot.
 Tutorial for applying Fisher's test:
 <https://statsandr.com/blog/fisher-s-exact-test-in-r-independence-test-for-a-small-sample/>
 
-```{r, fig.show = "hold", out.width = "50%", warning=FALSE}
+```{r, fig.show = "hold", out.width = "50%"}
 # barplot with the TF families found
 # plt <- htmltools::tagList() # not using interactive plots because it doesn´t keep some configuration
 # plt[[LIST_LEVEL]] <- htmltools::tagList()
