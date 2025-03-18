@@ -67,7 +67,6 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
     colnames(tf_merge) <- c("family", "total", "filtered")
     # tf_merge$Fisher <- NA
     # reshape the dataframe to use ggplot with it
-    library(reshape2)
     tf_ggdata <- melt(tf_merge[, c('family', 'total', 'filtered')],
                       id.vars = 1)
     # tf_ggdata$Fisher <- NA # for Fisher test
@@ -115,6 +114,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
     
     # barplot
     max_breaks <- max(tf_ggdata$value, na.rm = TRUE)
+    tf_ggdata <- na.omit(tf_ggdata)
     bp <- ggplot(tf_ggdata, aes(x = value, y = family, fill = variable,
                                 # label = ifelse(Fisher < P_FISHER, "*", "")
                                 )) +
@@ -145,7 +145,7 @@ rownames(tf_filt_df) <- tf_filt_df[,1]
 tf_filt_df[,1] <- NULL
 
 # remove useless variables
-rm(tf_all, tf_filt, tf_merge, tf_ggdata)
+# rm(tf_all, tf_filt, tf_merge, tf_ggdata)
 ```
 
 ```{r, echo=FALSE}
