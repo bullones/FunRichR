@@ -1,3 +1,5 @@
+# GSEA enrichment
+
 We prepare our data for GSEA analyses. For that purpose, we will use all the genes that are expressed and their t-value or log(foldchange).
 
 ```{r prepare-gsea_1, eval=EXPERIMENT==1, include=EXPERIMENT==1}

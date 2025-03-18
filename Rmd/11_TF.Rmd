@@ -114,7 +114,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
     
     # barplot
     max_breaks <- max(tf_ggdata$value, na.rm = TRUE)
-    tf_ggdata <- na.omit(tf_ggdata)
+    tf_ggdata$value[is.na(tf_ggdata$value)] <- 0
     bp <- ggplot(tf_ggdata, aes(x = value, y = family, fill = variable,
                                 # label = ifelse(Fisher < P_FISHER, "*", "")
                                 )) +

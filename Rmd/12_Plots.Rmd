@@ -529,7 +529,7 @@ if (length(network_plots[[LIST_LEVEL]]) != 0){
       tmp <- network_plots[[LIST_LEVEL]][[i]]$data
       tmp <- tmp[, 1:3]
       # keep ggcolors data
-      tmp2 <- as.data.frame(unlist(ggcolors[[LIST_LEVEL]][[i]]))
+      tmp2 <- as.data.frame(unlist(ggcolors[[LIST_LEVEL]][[names(network_plots[[LIST_LEVEL]][i])]]))
       # merge both of them
       tmp3 <- merge(x = tmp,
                     y = tmp2,

@@ -573,7 +573,6 @@ if (!check_KEGG) {
 ```{r, eval=check_KEGG, child='Rmd/12_Plots.Rmd'}
 ```
 
-# GSEA enrichment
 
 ```{r, eval=(EXPERIMENT==1 || (exists("DO_GSEA_3") && DO_GSEA_3)), child='Rmd/20_do-GSEA.Rmd'}
 ```
