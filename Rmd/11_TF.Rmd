@@ -145,10 +145,7 @@ rownames(tf_filt_df) <- tf_filt_df[,1]
 tf_filt_df[,1] <- NULL
 
 # remove useless variables
-rm(tf_all, tf_filt, tf_merge, tf_ggdata,
-   tf_f, tf_deg, no_tf_deg, tf_total_deg,
-   tf_no_deg, no_tf_no_deg, tf_total_no_deg,
-   tf_total_f, tf_total_no_f, tf_total)
+rm(tf_all, tf_filt, tf_merge, tf_ggdata)
 ```
 
 ```{r, echo=FALSE}

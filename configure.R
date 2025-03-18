@@ -153,6 +153,7 @@ EXPERIMENT = 1
 # In case your study organism is not a model organism, uncomment ORTHOLOGY_FILE and provide the absolute path to your orthology file
 # File must be in tsv format
 # REQUIRED: the first column must be the study organism gene IDs
+# REQUIRED: the file MUST have a header
 # Example:
 #   ORTHOLOGY_FILE = "~/Documents/orthology.tsv"
 
@@ -321,7 +322,7 @@ DO_REMOVE_REDUNDANCY = TRUE
 #
 # You may want to filter GO enriched results at specific GO level. That way you remove GO parent terms, which are more general terms within the GO hierarchy that group together more specific terms (children terms). Set the GO level you want to filter the enrichment by. Higher values will be closer to the children terms. If you set it to 0, no filter will be applied. Values between 1 and 7.
 # Example:
-#   LEVEL = 4
+#   GO_LEVEL = 4
 
 GO_LEVEL = 4
 # ///////////////////////////////
@@ -344,9 +345,9 @@ MAX_PLOT = 100
 #
 # In the enrichment with enrichGO, we calculate the number of genes involved in a GO term in our dataset (Counts) and the number of genes involved in that process in the organism of interest (Background). We calculate the Counts/Background ratio to determine the most represented GOs (Top GOs). You must specify the maximum number of Top GOs to plot as an expression heatmap.
 # Example:
-#   MAXTOPGOS <- 100
+#   MAXTOPGOS = 100
 
-MAXTOPGOS <- 100
+MAXTOPGOS = 100
 # //////////////////////
 
 
