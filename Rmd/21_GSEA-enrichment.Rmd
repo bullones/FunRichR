@@ -93,8 +93,9 @@ if (!is.null(enrichment_list[[LIST_LEVEL]])) {
         MAX_PLOT <- MAX_PLOT/2
       }
     l <- length(tmp2$Description)
-    max_min <- c(1:MAX_PLOT, (l-MAX_PLOT + 1):l)
     
+    max_min <- c(1:MAX_PLOT, (l-MAX_PLOT + 1):l)
+    tmp2$Description <- sub("^(.{90}).*", "\\1...", tmp2$Description, perl = TRUE)
     plt <- ggplot(tmp2[max_min, ],
                   aes(y = NES, x = Description)) +
       coord_flip() +

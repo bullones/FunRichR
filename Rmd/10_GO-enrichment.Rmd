@@ -26,7 +26,7 @@ for (i in 1:length(genes_list_arab))
                    readable = FALSE,
                    pool = FALSE)
   
-  temp@result$CountBg <- temp@result$Count / as.numeric(gsub("/.*", "",temp@result$BgRatio))
+  temp@result$EnrichRatio <- temp@result$Count / as.numeric(gsub("/.*", "",temp@result$BgRatio))
   # save before filter
   if (nrow(temp)) {
     name <- names(genes_list_arab)[i]

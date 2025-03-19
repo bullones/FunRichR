@@ -60,7 +60,7 @@ Other configuration variables
 ```{r}
 SEED <- 8                     # set seed for plots
 MIN_GSSIZE <-  ifelse (MIN_GSSIZE_USER == 0,
-                       5,
+                       10,
                        MIN_GSSIZE_USER) # minimal size of genes annotated for testing
 VERBOSE <- FALSE              # show or hide GSEA messages
 TO_TYPE <- "ENTREZID"         # output ID type for KEGG analysis
@@ -132,9 +132,11 @@ Keytype of input gene for enrichment | `r KEYTYPE`
 Adjusted pvalue cutoff for enrichment | `r P_CUTOFF`
 Qvalue cutoff for enrichment | `r Q_CUTOFF`
 Method for adjuted pvalue for enrichment | `r P_ADJUST_METHOD`
+Minimal size of genes annotated for enrichment analyses | `r ifelse(MIN_GSSIZE_USER, MIN_GSSIZE_USER, "default")`
+Maximal size of genes annotated for enrichment analyses | `r ifelse(MAX_GSSIZE_USER, MAX_GSSIZE_USER, "default")`
 Remove redundancy of GO terms | `r DO_REMOVE_REDUNDANCY`
-Filter GO terms by level | `r GO_LEVEL`
-Minimum number of genes for a process to be plotted | `r MIN_GENES`
+Filter GO terms by level | `r ifelse(GO_LEVEL, GO_LEVEL, "FALSE")`
+Minimum number of genes for a process to be plotted | `r ifelse(MIN_GENES, MIN_GENES, "default")`
 Maximum processes to plot | `r MAX_PLOT`
 Output id type for conversion to KEGG ids | `r TO_TYPE`
 Keytype of input gene for KEGG | `r KEYTYPE_KEGG`
@@ -474,7 +476,7 @@ Analyse each of the three GO hierarchies.
 ```{r}
 ONT <- "BP"
 MAX_GSSIZE <-  ifelse (MAX_GSSIZE_USER == 0,
-                       30*MIN_GSSIZE,
+                       500,
                        MAX_GSSIZE_USER)
 ```
 
@@ -486,7 +488,7 @@ MAX_GSSIZE <-  ifelse (MAX_GSSIZE_USER == 0,
 ```{r}
 ONT <- "MF"
 MAX_GSSIZE <-  ifelse (MAX_GSSIZE_USER == 0,
-                       20*MIN_GSSIZE,
+                       500,
                        MAX_GSSIZE_USER)
 ```
 
@@ -498,7 +500,7 @@ MAX_GSSIZE <-  ifelse (MAX_GSSIZE_USER == 0,
 ```{r}
 ONT <- "CC"
 MAX_GSSIZE <-  ifelse (MAX_GSSIZE_USER == 0,
-                       30*MIN_GSSIZE,
+                       500,
                        MAX_GSSIZE_USER)
 ```
 
@@ -512,7 +514,7 @@ KEGG pathways enrichment calculations
 ```{r over_representation_KEGG, warning=FALSE, message=FALSE}
 LIST_LEVEL <- "kegg"
 MAX_GSSIZE <-  ifelse (MAX_GSSIZE_USER == 0,
-                       20*MIN_GSSIZE,
+                       500,
                        MAX_GSSIZE_USER)
 enrichment_list[[LIST_LEVEL]] <- list()
 to_save[[LIST_LEVEL]] <- list()
@@ -532,7 +534,7 @@ for (i in 1:length(genes_list_kegg)) {
   # if it's empty we don't save it in the list
   if (nrow(temp))
   {
-    temp@result$CountBg <- temp@result$Count / as.numeric(gsub("/.*", "",temp@result$BgRatio))
+    temp@result$EnrichRatio <- temp@result$Count / as.numeric(gsub("/.*", "",temp@result$BgRatio))
     # save values in the list
     name <- names(genes_list_kegg)[i]
     enrichment_list[[LIST_LEVEL]][[name]] <- temp
