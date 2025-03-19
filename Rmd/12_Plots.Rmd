@@ -16,16 +16,16 @@ MAX_PLOT.BK <- MAX_PLOT
 COUNTBG_CUTOFF <- 0.25
 tmp <- data.frame()
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])){
-  tmp <- rbind(tmp, enrichment_list[[LIST_LEVEL]][[i]]@result[enrichment_list[[LIST_LEVEL]][[i]]@result$p.adjust <= P_CUTOFF & enrichment_list[[LIST_LEVEL]][[i]]@result$qvalue <= Q_CUTOFF & enrichment_list[[LIST_LEVEL]][[i]]@result$CountBg >= COUNTBG_CUTOFF, c("ID", "CountBg")])
+  tmp <- rbind(tmp, enrichment_list[[LIST_LEVEL]][[i]]@result[enrichment_list[[LIST_LEVEL]][[i]]@result$p.adjust <= P_CUTOFF & enrichment_list[[LIST_LEVEL]][[i]]@result$qvalue <= Q_CUTOFF & enrichment_list[[LIST_LEVEL]][[i]]@result$EnrichRatio >= COUNTBG_CUTOFF, c("ID", "EnrichRatio")])
 }
 # length(unique(tmp$ID))
 while (length(unique(tmp$ID)) > MAXTOPGOS) {
   COUNTBG_CUTOFF <- COUNTBG_CUTOFF + 0.05
-  tmp <- tmp[tmp$CountBg >= COUNTBG_CUTOFF, ]
+  tmp <- tmp[tmp$EnrichRatio >= COUNTBG_CUTOFF, ]
 }
 
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])){
-  enrichment_list[[LIST_LEVEL]][[i]]@result$TopGO <- enrichment_list[[LIST_LEVEL]][[i]]@result$CountBg >= COUNTBG_CUTOFF & enrichment_list[[LIST_LEVEL]][[i]]@result$p.adjust <= P_CUTOFF & enrichment_list[[LIST_LEVEL]][[i]]@result$qvalue <= Q_CUTOFF
+  enrichment_list[[LIST_LEVEL]][[i]]@result$TopGO <- enrichment_list[[LIST_LEVEL]][[i]]@result$EnrichRatio >= COUNTBG_CUTOFF & enrichment_list[[LIST_LEVEL]][[i]]@result$p.adjust <= P_CUTOFF & enrichment_list[[LIST_LEVEL]][[i]]@result$qvalue <= Q_CUTOFF
 }
 ```
 
@@ -141,11 +141,11 @@ if (grepl("kegg", LIST_LEVEL)) {
 ```{r, warning=FALSE, eval=!grepl("GSEA", LIST_LEVEL), include=!grepl("GSEA", LIST_LEVEL)}
 # calculate heatmap
 # save first iteration to merge later using a for loop
-tmp_CountBg <- enrichment_list[[LIST_LEVEL]][[1]]@result[enrichment_list[[LIST_LEVEL]][[1]]@result$TopGO, c("Description", "CountBg")]
+tmp_CountBg <- enrichment_list[[LIST_LEVEL]][[1]]@result[enrichment_list[[LIST_LEVEL]][[1]]@result$TopGO, c("Description", "EnrichRatio")]
 if (length(enrichment_list[[LIST_LEVEL]])>1){
   for (i in 2:length(enrichment_list[[LIST_LEVEL]])){
     tmp_CountBg <- merge(tmp_CountBg,
-                         enrichment_list[[LIST_LEVEL]][[i]]@result[enrichment_list[[LIST_LEVEL]][[i]]@result$TopGO, c("Description", "CountBg")],
+                         enrichment_list[[LIST_LEVEL]][[i]]@result[enrichment_list[[LIST_LEVEL]][[i]]@result$TopGO, c("Description", "EnrichRatio")],
                          by = "Description",
                          all  = TRUE)
   } # end for
@@ -160,11 +160,11 @@ if (nrow(tmp_CountBg)) {
   #calculate height and width
   height <- ceiling(0.17*nrow(tmp_CountBg))
   width <- ceiling(0.8*ncol(tmp_CountBg))
-  # minumum width 5
+  # minimum width 5
   if (width < 5) {
     width <- 5
   } # end if width
-  # minumum height 5
+  # minimum height 5
   if (height < 2) {
     height <- 2
   } # end if height
@@ -212,7 +212,16 @@ if (nrow(tmp_CountBg)) {
            cluster_rows = FALSE,
            fontsize = 6,
            color = colorRampPalette(c("#3E7FB9", "white", "#DD6360"))(length(breaks) - 1),
-           breaks = breaks)
+           breaks = breaks,
+           main = "Top GOs ranked by expression in multiple contrasts")
+  
+  pheatmap(as.matrix(tmp_CountBg),
+           cluster_cols = FALSE,
+           cluster_rows = TRUE,
+           fontsize = 6,
+           color = colorRampPalette(c("#3E7FB9", "white", "#DD6360"))(length(breaks) - 1),
+           breaks = breaks,
+           main = "Top GOs clustering functional profiles")
 } else {
   message("No Top GO to plot")
 }
@@ -258,7 +267,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   } # end if GSEA
   # if it's over-enrichment
   if (grepl("OE", LIST_LEVEL)){
-    tmp2 <- order(tmp$CountBg, decreasing = TRUE)[1:MAX_PLOT]
+    tmp2 <- order(tmp$EnrichRatio, decreasing = TRUE)[1:MAX_PLOT]
     tmp2 <- seq_len(nrow(tmp)) %in% tmp2
   } # end if OE
   # if it's KEGG
@@ -360,7 +369,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   } # end if GSEA
   # if it's over-enrichment
   if (grepl("OE", LIST_LEVEL)){
-    tmp2 <- order(tmp$CountBg, decreasing = TRUE)[1:MAX_PLOT]
+    tmp2 <- order(tmp$EnrichRatio, decreasing = TRUE)[1:MAX_PLOT]
     tmp2 <- seq_len(nrow(tmp)) %in% tmp2
   } # end if OE
   # if it's KEGG
@@ -470,7 +479,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   } # end if GSEA
   # if it's over-enrichment
   if (grepl("OE", LIST_LEVEL)){
-    tmp2 <- order(tmp$CountBg, decreasing = TRUE)[1:MAX_PLOT]
+    tmp2 <- order(tmp$EnrichRatio, decreasing = TRUE)[1:MAX_PLOT]
     tmp2 <- seq_len(nrow(tmp)) %in% tmp2
   } # end if OE
   # if it's KEGG
