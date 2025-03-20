@@ -238,7 +238,7 @@ DO_REMOVE_DUPS = TRUE
 #
 # You must specify the P-value adjustment method. Available options are: "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"
 # Example:
-#   P_ADJUST_METHOD = "none"
+#   P_ADJUST_METHOD = "BH"
 
 P_ADJUST_METHOD = "BH"
 # //////////////////////////

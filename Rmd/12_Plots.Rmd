@@ -215,13 +215,15 @@ if (nrow(tmp_CountBg)) {
            breaks = breaks,
            main = "Top GOs ranked by expression in multiple contrasts")
   
-  pheatmap(as.matrix(tmp_CountBg),
-           cluster_cols = FALSE,
-           cluster_rows = TRUE,
-           fontsize = 6,
-           color = colorRampPalette(c("#3E7FB9", "white", "#DD6360"))(length(breaks) - 1),
-           breaks = breaks,
-           main = "Top GOs clustering functional profiles")
+  if (nrow(tmp_CountBg) >= 2) {
+    pheatmap(as.matrix(tmp_CountBg),
+             cluster_cols = FALSE,
+             cluster_rows = TRUE,
+             fontsize = 6,
+             color = colorRampPalette(c("#3E7FB9", "white", "#DD6360"))(length(breaks) - 1),
+             breaks = breaks,
+             main = "Top GOs clustering functional profiles")
+  }
 } else {
   message("No Top GO to plot")
 }
@@ -235,7 +237,7 @@ if (grepl("kegg", LIST_LEVEL)) {
 }
 ```
 
-```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.19*height_plots), fig.width=5}
+```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.17*height_plots), fig.width=5}
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   # filter by adjust P and q-value

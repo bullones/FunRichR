@@ -1,4 +1,4 @@
-```{r load_genes}
+```{r load_genes, eval=EXPERIMENT >= 1 & EXPERIMENT <= 4}
 # load data ####
 genes <- read.table(file = paste0(WD_DIR, FILE),
                     sep = "\t",
@@ -116,7 +116,33 @@ genes_list[["gene_list"]] <- genes
 rm(genes)
 ```
 
-```{r load_ort, eval=exists("ORTHOLOGY_FILE") , include=exists("ORTHOLOGY_FILE")}
+```{r format_5, eval=EXPERIMENT==5, include=EXPERIMENT==5}
+file_names <- ls(pattern = "FILE_\\d+")
+FILE <- unlist(mget(file_names, envir = .GlobalEnv))
+counts <- list()
+for (i in 1:length(FILE)) {
+  counts[[FILE_NAME[i]]] <- read.table(file = paste0(WD_DIR,
+                                                     FILE[i]),
+                                       sep = "\t",
+                                       header = TRUE,
+                                       check.names = FALSE)
+}
+# keep columns of interest
+genes_list <- list()
+for (i in 1:length(counts)) {
+  tmp <- counts[[i]][, c(ID_COL, FC_COL), drop = FALSE]
+  colnames(tmp) <- c("GeneID", "log2(foldchange)")
+  # # split up and down
+  tmp_up <- tmp[tmp[[2]] > 0, ]
+  tmp_down <- tmp[tmp[[2]] < 0, ]
+  name <- names(counts[i])
+  genes_list[[paste0(name, ">control")]] <- tmp_up
+  genes_list[[paste0(name, "<control")]] <- tmp_down
+}
+```
+
+
+```{r load_ort, eval=!is.na(ORTHOLOGY_FILE) , include=!is.na(ORTHOLOGY_FILE)}
 ort <- read.table(file = ORTHOLOGY_FILE,
                   sep = "\t",
                   header = TRUE)

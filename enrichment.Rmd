@@ -82,7 +82,7 @@ message(paste0("We'll only keep the 3 biggest communities per cluster if they ar
 ```{r, include=FALSE}
 # complete table when we don't use orthology file
 if (!exists("ORTHOLOGY_FILE")){
-  ORTHOLOGY_FILE <- "NA"
+  ORTHOLOGY_FILE <- NA
 }
 ```
 
@@ -212,7 +212,7 @@ for (i in 1:length(genes_list))
 }
 ```
 
-```{r, eval=is.numeric(MODEL_REFERENCE), include=is.numeric(MODEL_REFERENCE)}
+```{r, eval=MODEL_REFERENCE, include=MODEL_REFERENCE}
 # If we didn't do the orthology, we will rename the variable
 genes_list_arab <- genes_list
 # and we will remove the isoforms for the clusterprofiler
@@ -391,11 +391,12 @@ genes_list_kegg <- list()
 for (i in 1:length(genes_list_arab)) {
   # get uniprot ID for KEGG analysis
   temp <- genes_list_arab[[i]]
-  if (ncol(temp)==1) {
-    col <- 1
-  } else  {
-    col <- 2
-  }
+  # if (ncol(temp)==1) {
+  #   col <- 1
+  # } else  {
+  #   col <- 2
+  # }
+  col <- colnames(temp)[which(apply(temp, 2, function(col) any(grepl("^AT[1-5]G\\d{5}$", col, perl = TRUE), na.rm = TRUE)))[1]]
   uniprot <- bitr(temp[[col]],
                   fromType = KEYTYPE,
                   toType = TO_TYPE,
