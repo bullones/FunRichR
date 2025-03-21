@@ -132,9 +132,9 @@ if (height_plots<25){
 
 ```{r, echo=FALSE, results='asis'}
 if (grepl("kegg", LIST_LEVEL)) {
-  cat("## Heatmap\n")
+  cat("## Most enriched\n")
 } else if (grepl("OE", LIST_LEVEL)) {
-  cat("### Heatmap\n")
+  cat("### Most enriched\n")
 } # not shown for GSEA
 ```
 
@@ -201,19 +201,19 @@ if (nrow(tmp_CountBg)) {
 ```{r, fig.height=height, fig.width=width, warning=FALSE, eval=!grepl("GSEA", LIST_LEVEL), include=!grepl("GSEA", LIST_LEVEL)}
 if (nrow(tmp_CountBg)) {
 # order pheatmap according to GOs frequency
-  row_order <- order(rowSums(tmp_CountBg != 0), decreasing = TRUE)
-  tmp_CountBg <- tmp_CountBg[row_order, ]
+  # row_order <- order(rowSums(tmp_CountBg != 0), decreasing = TRUE)
+  # tmp_CountBg <- tmp_CountBg[row_order, ]
   
   # plot heatmap son width and height are calculated
   max_abs <- max(abs(c(min(tmp_CountBg), max(tmp_CountBg))))
   breaks <- seq(-max_abs, max_abs, length.out = 12)
-  pheatmap(as.matrix(tmp_CountBg),
-           cluster_cols = FALSE,
-           cluster_rows = FALSE,
-           fontsize = 6,
-           color = colorRampPalette(c("#3E7FB9", "white", "#DD6360"))(length(breaks) - 1),
-           breaks = breaks,
-           main = "Top GOs ranked by expression in multiple contrasts")
+  # pheatmap(as.matrix(tmp_CountBg),
+  #          cluster_cols = FALSE,
+  #          cluster_rows = FALSE,
+  #          fontsize = 6,
+  #          color = colorRampPalette(c("#3E7FB9", "white", "#DD6360"))(length(breaks) - 1),
+  #          breaks = breaks,
+  #          main = "Top GOs ranked by expression in multiple contrasts")
   
   if (nrow(tmp_CountBg) >= 2) {
     pheatmap(as.matrix(tmp_CountBg),
@@ -237,7 +237,7 @@ if (grepl("kegg", LIST_LEVEL)) {
 }
 ```
 
-```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.17*height_plots), fig.width=5}
+```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.10*height_plots), fig.width=5}
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   # filter by adjust P and q-value
@@ -732,4 +732,102 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
             colors = brewer.pal(8, "Dark2")[-(1:2)])
   title(names(enrichment_list[[LIST_LEVEL]][i]), line = 2)
 }
-``` 
+```
+
+```{r, echo=FALSE, results='asis'}
+if (grepl("OE", LIST_LEVEL)) {
+  cat("### Overview\n")
+}
+```
+
+```{r, warning=FALSE, eval=grepl("OE", LIST_LEVEL), include=grepl("OE", LIST_LEVEL)}
+# save first iteration to merge later using a for loop
+tmp <- subset(enrichment_list[[LIST_LEVEL]][[1]]@result,
+              p.adjust <= P_CUTOFF & qvalue <= Q_CUTOFF,
+              select = c("Description", "EnrichRatio"))
+if (length(enrichment_list[[LIST_LEVEL]])>1) {
+  for (i in 2:length(enrichment_list[[LIST_LEVEL]])) {
+    tmp <- merge(tmp,
+                 subset(enrichment_list[[LIST_LEVEL]][[i]]@result,
+                        p.adjust <= P_CUTOFF & qvalue <= Q_CUTOFF,
+                        select = c("Description", "EnrichRatio")),
+                 by = "Description",
+                 all = TRUE,
+                 sort = FALSE)
+  } # end for
+} # end if
+
+if (nrow(tmp)) {
+  # use Description as rowname
+  rownames(tmp) <- tmp$Description
+  # remove Description column
+  tmp$Description <- NULL
+  # change colnames
+  colnames(tmp) <- names(enrichment_list[[LIST_LEVEL]])
+  # multiply < by -1
+  tmp[, grepl("<", colnames(tmp))] <- tmp[, grepl("<", colnames(tmp))] * -1
+  # change colnames
+  colnames(tmp) <- gsub(">", "-", colnames(tmp))
+  colnames(tmp) <- gsub("<", "-", colnames(tmp))
+  names <- unique(colnames(tmp))
+  # create tmp_final to save data
+  tmp_final <- data.frame(matrix(ncol = 0,
+                                 nrow = nrow(tmp)))
+  rownames(tmp_final) <- rownames(tmp)
+  for (i in 1:length(names)) {
+    # extract columns with same name as i
+    tmp2 <- tmp[, colnames(tmp) == names[i], drop = FALSE]
+    if (ncol(tmp2) == 2) {
+      tmp3 <- data.frame(combined = ifelse(is.na(tmp2[[1]]),
+                                           tmp2[[2]],
+                                           ifelse(is.na(tmp2[[2]]),
+                                                        tmp2[[1]],
+                                                        rowMeans(tmp2[, c(1, 2)]))))
+      colnames(tmp3) <- names[i]
+      rownames(tmp3) <- rownames(tmp2)
+    } else {
+      tmp3 <- tmp2
+    }
+    # change NA values for 0
+    tmp3[is.na(tmp3)] <- 0
+    # merge tmp3 with tmp_final
+    tmp_final <- merge(x = tmp_final,
+                       y = tmp3,
+                       by = 0,
+                       sort = FALSE)
+    # add rownames
+    rownames(tmp_final) <- tmp_final$Row.names
+    # remove Row.names column
+    tmp_final$Row.names <- NULL
+  } # end for
+  # remove functions with very low (0.05) EnrichRatio
+  tmp_final <- tmp_final[rowSums(abs(tmp_final))>=0.05, ]
+  # truncate names into 60 characters
+  truncated_names <- sub("^(.{60}).*", "\\1...", rownames(tmp_final), perl = TRUE)
+  rownames(tmp_final) <- truncated_names
+  #calculate height and width
+  height <- ceiling(0.10*nrow(tmp_final))
+  width <- ceiling(0.8*ncol(tmp_final))
+  # minimum width 5
+  if (width < 5) {
+    width <- 5
+  } # end if width
+  # minimum height 5
+  if (height < 2) {
+    height <- 2
+  } # end if height
+} # end if nrow(tmp)
+```
+
+```{r, fig.height=height, fig.width=width, eval=grepl("OE", LIST_LEVEL), include=grepl("OE", LIST_LEVEL)}
+max_abs <- max(abs(c(min(tmp_final), max(tmp_final))))
+breaks <- seq(-max_abs, max_abs, length.out = 100)
+pheatmap(as.matrix(tmp_final),
+         cluster_cols = FALSE,
+         cluster_rows = TRUE,
+         border_color = NA,
+         fontsize = 6,
+         color = colorRampPalette(c("#3E7FB9", "white", "#DD6360"))(length(breaks) - 1),
+         breaks = breaks,
+         main = paste0("Overview of ", LIST_LEVEL, " based on the EnrichRatio"))
+```
