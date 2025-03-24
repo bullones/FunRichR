@@ -804,6 +804,7 @@ if (nrow(tmp)) {
   tmp_final <- tmp_final[rowSums(abs(tmp_final))>=0.05, ]
   # truncate names into 60 characters
   truncated_names <- sub("^(.{60}).*", "\\1...", rownames(tmp_final), perl = TRUE)
+  truncated_names <- make.unique(truncated_names, sep = "")
   rownames(tmp_final) <- truncated_names
   #calculate height and width
   height <- ceiling(0.10*nrow(tmp_final))
