@@ -13,7 +13,7 @@ MAX_PLOT.BK <- MAX_PLOT
 
 ```{r, eval=!grepl("GSEA", LIST_LEVEL), include=!grepl("GSEA", LIST_LEVEL)}
 # get TopGO
-COUNTBG_CUTOFF <- 0.25
+COUNTBG_CUTOFF <- 0.15
 tmp <- data.frame()
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])){
   tmp <- rbind(tmp, enrichment_list[[LIST_LEVEL]][[i]]@result[enrichment_list[[LIST_LEVEL]][[i]]@result$p.adjust <= P_CUTOFF & enrichment_list[[LIST_LEVEL]][[i]]@result$qvalue <= Q_CUTOFF & enrichment_list[[LIST_LEVEL]][[i]]@result$EnrichRatio >= COUNTBG_CUTOFF, c("ID", "EnrichRatio")])
@@ -800,8 +800,16 @@ if (nrow(tmp)) {
     # remove Row.names column
     tmp_final$Row.names <- NULL
   } # end for
-  # remove functions with very low (0.05) EnrichRatio
-  tmp_final <- tmp_final[rowSums(abs(tmp_final))>=0.05, ]
+  # # remove functions with very low (0.05) EnrichRatio
+  # if (nrow(tmp_final) > MAX_PLOT) {
+  #   tmp4 <- tmp_final
+  #   tmp4$rowsum <- rowSums(abs(tmp_final))
+  #   tmp4 <- tmp4[order(tmp4$rowsum, decreasing = TRUE), ]
+  #   tmp4 <- tmp4[1:100, ]
+  #   tmp4$rowsum <- NULL
+  #   tmp_final <- tmp4
+  # }
+  # tmp_final <- tmp_final[rowSums(abs(tmp_final))>=0.05, ]
   # truncate names into 60 characters
   truncated_names <- sub("^(.{60}).*", "\\1...", rownames(tmp_final), perl = TRUE)
   truncated_names <- make.unique(truncated_names, sep = "")
