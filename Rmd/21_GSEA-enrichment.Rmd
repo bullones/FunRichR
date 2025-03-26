@@ -80,7 +80,7 @@ if (height_plots<25){
 }
 ```
 
-```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.19*height_plots), fig.width=7}
+```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.19*height_plots), fig.width=7, warning=FALSE}
 if (!is.null(enrichment_list[[LIST_LEVEL]])) {
   for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
     tmp <- enrichment_list[[LIST_LEVEL]][[i]]
@@ -92,18 +92,46 @@ if (!is.null(enrichment_list[[LIST_LEVEL]])) {
       } else {# end if nrow(tmp)
         MAX_PLOT <- MAX_PLOT/2
       }
-    l <- length(tmp2$Description)
+    # select positives
+    keep <- ifelse(nrow(tmp2[tmp2$NES>0, ])>=MAX_PLOT,
+                   MAX_PLOT,
+                   nrow(tmp2[tmp2$NES>0, ]))
+    tmp_up <- tmp2[1:keep, ]
+    # select negatives
+    keep <- ifelse(nrow(tmp2[tmp2$NES<0, ])>=MAX_PLOT,
+                   MAX_PLOT,
+                   nrow(tmp2[tmp2$NES<0, ]))
+    tmp_down <- tmp2[(nrow(tmp) - (keep-1)):nrow(tmp2), ]
+    # unify both
+    tmp2 <- rbind(tmp_up, tmp_down)
     
-    max_min <- c(1:MAX_PLOT, (l-MAX_PLOT + 1):l)
-    tmp2$Description <- sub("^(.{90}).*", "\\1...", tmp2$Description, perl = TRUE)
-    plt <- ggplot(tmp2[max_min, ],
-                  aes(y = NES, x = Description)) +
-      coord_flip() +
-      geom_bar(stat = "identity",
-               fill = c(rep("#3E7FB9", MAX_PLOT), rep("#DD6360", MAX_PLOT))) +
-      scale_x_discrete(limits = tmp2[max_min, ]$Description) +
-      theme_minimal() +
-      ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i])))
+    # l <- length(tmp2$Description)
+    # max_min <- c(1:MAX_PLOT, (l-MAX_PLOT + 1):l)
+    
+    # change Description to 60 characters
+    tmp2$Description <- sub("^(.{60}).*", "\\1...", tmp2$Description, perl = TRUE)
+    plt <- diverging_bar_chart(data = tmp2,
+                               x = Description,
+                               y = NES,
+                               bar_colors = c("#DD6360", "#3E7FB9"),
+                               text_color = "black",
+                               text_size = 9) +
+      scale_y_continuous(limits = c(min(tmp2$NES), max(tmp2$NES))) +
+      ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i]))) +
+      theme(panel.grid.major.y = element_blank(),  # remove main horizontal lines
+        panel.grid.minor.y = element_blank(),  # remove secondary horizontal lines
+        panel.grid.major.x = element_blank(),  # remove main vertical lines
+        panel.grid.minor.x = element_blank(),  # remove secondarty vertical lines
+        panel.background = element_blank())     # remove background
+      # theme_minimal() +
+    # plt <- ggplot(tmp2[max_min, ],
+    #               aes(y = NES, x = Description)) +
+    #   coord_flip() +
+    #   geom_bar(stat = "identity",
+    #            fill = c(rep("#3E7FB9", MAX_PLOT), rep("#DD6360", MAX_PLOT))) +
+    #   scale_x_discrete(limits = tmp2[max_min, ]$Description) +
+    #   theme_minimal() +
+    #   ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i])))
     print(plt)
     MAX_PLOT <- MAX_PLOT.BK
   }

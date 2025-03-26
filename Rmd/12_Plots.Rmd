@@ -237,7 +237,7 @@ if (grepl("kegg", LIST_LEVEL)) {
 }
 ```
 
-```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.10*height_plots), fig.width=5}
+```{r, fig.show = "hold", out.width = "50%", fig.height=ceiling(0.12*height_plots), fig.width=5}
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   # filter by adjust P and q-value
