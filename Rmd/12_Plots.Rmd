@@ -124,9 +124,9 @@ if (max_enrich > MAX_PLOT) {
 } else {
   height_plots <- max_enrich
 }
-# minimum height of 25px
-if (height_plots<25){
-  height_plots <- 25
+# minimum height of 30px
+if (height_plots<40){
+  height_plots <- 40
 }
 ```
 
