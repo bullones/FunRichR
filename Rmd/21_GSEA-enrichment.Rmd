@@ -96,14 +96,22 @@ if (!is.null(enrichment_list[[LIST_LEVEL]])) {
     keep <- ifelse(nrow(tmp2[tmp2$NES>0, ])>=MAX_PLOT,
                    MAX_PLOT,
                    nrow(tmp2[tmp2$NES>0, ]))
-    tmp_up <- tmp2[1:keep, ]
+    if(keep) tmp_up <- tmp2[1:keep, ]
     # select negatives
     keep <- ifelse(nrow(tmp2[tmp2$NES<0, ])>=MAX_PLOT,
                    MAX_PLOT,
                    nrow(tmp2[tmp2$NES<0, ]))
-    tmp_down <- tmp2[(nrow(tmp) - (keep-1)):nrow(tmp2), ]
+    if(keep) tmp_down <- tmp2[(nrow(tmp) - (keep-1)):nrow(tmp2), ]
     # unify both
-    tmp2 <- rbind(tmp_up, tmp_down)
+    if (exists("tmp_up") && (exists("tmp_down"))) { # if both files exists
+      tmp2 <- rbind(tmp_up, tmp_down)
+    } else if (exists("tmp_up")) { # if only tmp_up exists
+      tmp2 <- tmp_up
+    } else if (exists("tmp_down")) { # if only tmp_down exists
+      tmp2 <- tmp_down
+    } else { # if none exists
+      next
+    }
     
     # l <- length(tmp2$Description)
     # max_min <- c(1:MAX_PLOT, (l-MAX_PLOT + 1):l)
@@ -116,7 +124,7 @@ if (!is.null(enrichment_list[[LIST_LEVEL]])) {
                                bar_colors = c("#DD6360", "#3E7FB9"),
                                text_color = "black",
                                text_size = 9) +
-      scale_y_continuous(limits = c(min(tmp2$NES), max(tmp2$NES))) +
+      scale_y_continuous(limits = c(min(tmp2$NES) - 2, max(tmp2$NES) + 2)) +
       ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i]))) +
       theme(panel.grid.major.y = element_blank(),  # remove main horizontal lines
         panel.grid.minor.y = element_blank(),  # remove secondary horizontal lines
@@ -138,6 +146,8 @@ if (!is.null(enrichment_list[[LIST_LEVEL]])) {
 } else {
   message(LIST_LEVEL, " has no enriched terms, so histogram will be skipped")
 }
+
+rm(tmp, tmp2, tmp_up, tmp_down)
 ```
 
 ```{r, child='12_Plots.Rmd'}

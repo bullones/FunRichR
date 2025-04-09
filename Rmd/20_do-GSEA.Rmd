@@ -5,7 +5,7 @@ We prepare our data for GSEA analyses. For that purpose, we will use all the gen
 ```{r prepare-gsea_1, eval=EXPERIMENT==1, include=EXPERIMENT==1}
 # We keep the t-value columns from genes_gsea
 keep <- 1 # gene ID column
-keep <- append(keep, grep("^t\\.", colnames(genes_gsea)))
+keep <- append(keep, grep("^t", colnames(genes_gsea)))
 genes_gsea <- genes_gsea[, keep]
 
 # creamos una lista vacía
