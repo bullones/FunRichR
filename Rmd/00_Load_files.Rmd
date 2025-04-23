@@ -18,17 +18,11 @@ keep <- append(keep, grep("^Coef", colnames(genes)))
 genes <- genes[, keep]
 
 # definimos las comparaciones
-# si hay un solo contraste, hay un problema por el nombre de las columnas
-# debería solucionarse con el ifelse
-if (length(genes) == 3) {
-  allContrasts <- c("contrast")
-} else {
-  allContrasts <- colnames(genes)
-  allContrasts <- allContrasts[-1] # remove gene ID column
-  allContrasts <- gsub("Results.", "", allContrasts)
-  allContrasts <- gsub("Coef.", "", allContrasts)
-  allContrasts <- unique(allContrasts)
-}
+allContrasts <- colnames(genes)
+allContrasts <- allContrasts[-1] # remove gene ID column
+allContrasts <- gsub("Results.", "", allContrasts)
+allContrasts <- gsub("Coef.", "", allContrasts)
+allContrasts <- unique(allContrasts)
 
 # creamos una lista vacía
 genes_list <- list()

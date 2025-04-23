@@ -381,7 +381,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   # if it's GSEA
   if (grepl("GSEA", LIST_LEVEL)) {
     tmp2 <- order(tmp$NES, decreasing = TRUE)
-    tmp2 <- c(head(tmp2, MAX_PLOT), tail(tmp, MAX_PLOT))
+    tmp2 <- c(head(tmp2, MAX_PLOT), tail(tmp2, MAX_PLOT))
     tmp2 <- seq_len(nrow(tmp)) %in% tmp2
   }
   MAX_PLOT <- MAX_PLOT.BK
@@ -491,7 +491,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   # if it's GSEA
   if (grepl("GSEA", LIST_LEVEL)) {
     tmp2 <- order(tmp$NES, decreasing = TRUE)
-    tmp2 <- c(head(tmp2, MAX_PLOT), tail(tmp, MAX_PLOT))
+    tmp2 <- c(head(tmp2, MAX_PLOT), tail(tmp2, MAX_PLOT))
     tmp2 <- seq_len(nrow(tmp)) %in% tmp2
   }
   MAX_PLOT <- MAX_PLOT.BK
@@ -552,8 +552,8 @@ if (length(network_plots[[LIST_LEVEL]]) != 0){
                          aes(x = x, y = y, name = name)) +
           geom_point(aes(color = categories), size = 2) +
         scale_color_manual(name = "Processes including:",
-                           breaks = c("Transcription factors", "Genes of interest", "Both categories", "None"),
-                           values = c("Transcription factors" = "orange", "Genes of interest" = "purple", "Both categories" = "yellow", "None" = "green")) +
+                           breaks = c("Transcription factors", "Genes of interest", "TF and GoI", "None"),
+                           values = c("Transcription factors" = "orange", "Genes of interest" = "purple", "TF and GoI" = "yellow", "None" = "green")) +
         ggtitle(paste0(names(network_plots[[LIST_LEVEL]][i]), " enriched ", list_plot, " ", ont_plot))
         plt[[LIST_LEVEL]][[i]] <- as_widget(ggplotly(p_nt_int,
                                               height = 600,
