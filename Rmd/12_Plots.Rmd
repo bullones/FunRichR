@@ -241,7 +241,13 @@ if (grepl("kegg", LIST_LEVEL)) {
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   # filter by adjust P and q-value
-  tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  if (all(is.na(tmp@result$qvalue))) {
+    # filter only by p adjusted
+    tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF, ]
+    message("The number of genes analysed for ", names(enrichment_list[[LIST_LEVEL]])[i], " was very small, so no Q value was calculated and it will not be used for the analyses")
+  } else {
+    tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  }
   # filter by minimum number of genes (not applied for KEGGs)
   if (grepl("OE", LIST_LEVEL)) {
     tmp@result <- tmp@result[tmp@result$Count >= MIN_GENES, ]
@@ -343,7 +349,13 @@ warning("Be careful with the interpretation of treeplots: if there are more than
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   # filter by adjust P and q-value
-  tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  if (all(is.na(tmp@result$qvalue))) {
+    # filter only by p adjusted
+    tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF, ]
+    message("The number of genes analysed for ", names(enrichment_list[[LIST_LEVEL]])[i], " was very small, so no Q value was calculated and it will not be used for the analyses")
+  } else {
+    tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  }
   # filter by minimum number of genes (not applied for KEGGs)
   if (grepl("OE", LIST_LEVEL)) {
     tmp@result <- tmp@result[tmp@result$Count >= MIN_GENES, ]
@@ -453,7 +465,13 @@ network_plots[[LIST_LEVEL]] <- list()
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   # filter by adjust P and q-value
-  tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  if (all(is.na(tmp@result$qvalue))) {
+    # filter only by p adjusted
+    tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF, ]
+    message("The number of genes analysed for ", names(enrichment_list[[LIST_LEVEL]])[i], " was very small, so no Q value was calculated and it will not be used for the analyses")
+  } else {
+    tmp@result <- tmp@result[tmp@result$p.adjust <= P_CUTOFF & tmp@result$qvalue <= Q_CUTOFF, ]
+  }
   # filter by minimum number of genes (not applied for KEGGs)
   if (grepl("OE", LIST_LEVEL)) {
     tmp@result <- tmp@result[tmp@result$Count >= MIN_GENES, ]
