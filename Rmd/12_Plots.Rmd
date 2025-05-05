@@ -94,7 +94,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
                   by = 1)
     tmp4 <- tmp4$type
     # assign pink if a process has both TF and other genes
-    if (any(tmp4 == "both") | (any(tmp4 == "tf") && any(tmp4 == "other_genes"))) {ggcolors[[LIST_LEVEL]][[i]] <- append(ggcolors[[LIST_LEVEL]][[i]], setNames("Both categories", tmp[j,]$Description))
+    if (any(tmp4 == "both") | (any(tmp4 == "tf") && any(tmp4 == "other_genes"))) {ggcolors[[LIST_LEVEL]][[i]] <- append(ggcolors[[LIST_LEVEL]][[i]], setNames("TF and GoI", tmp[j,]$Description))
       } else { # assign orange if it's TF
         if (any(tmp4 == "tf")) {
           ggcolors[[LIST_LEVEL]][[i]] <- append(ggcolors[[LIST_LEVEL]][[i]], setNames("Transcription factors", tmp[j,]$Description))

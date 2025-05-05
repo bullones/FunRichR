@@ -170,12 +170,11 @@ if (!is.null(enrichment_list[[LIST_LEVEL]])) {
     #   ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i])))
     print(plt)
     MAX_PLOT <- MAX_PLOT.BK
+    suppressWarnings(rm(tmp, tmp2, tmp_up, tmp_down))
   }
 } else {
   message(LIST_LEVEL, " has no enriched terms, so histogram will be skipped")
 }
-
-rm(tmp, tmp2, tmp_up, tmp_down)
 ```
 
 ```{r, child='12_Plots.Rmd'}
