@@ -43,7 +43,7 @@ if (PKG_UPDATE) {
 VERSION_BIOC <- BiocManager::version()
 
 ## vector with required BioConductor packages ####
-from_BioC <- c("ggtree", "edgeR", "clusterProfiler", "enrichplot", "DOSE", "pathview", organism)
+from_BioC <- c("ggtree", "edgeR", "clusterProfiler", "enrichplot", "DOSE", "pathview", "topGO", organism)
 
 ## obtain libraries that must be installed ####
 nuevos_BioC <- from_BioC[!(from_BioC %in% installed_libs)]

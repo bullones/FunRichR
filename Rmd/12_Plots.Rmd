@@ -449,6 +449,30 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
     theme(plot.title = element_text(hjust = 0.9))
   print(p_tp)
 }
+rm(p_tp)
+```
+
+```{r, echo=FALSE, results='asis'}
+if (!grepl("kegg", LIST_LEVEL)) {
+  cat("## Hierarchical tree\n")
+}
+# not available for KEGG results
+```
+
+```{r, eval=!grepl("kegg", LIST_LEVEL), include=!grepl("kegg", LIST_LEVEL), fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6, dpi=600, message=FALSE}
+for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
+  # we won't filter since we want all GOs to plot
+  tmp <- enrichment_list[[LIST_LEVEL]][[i]]
+  set.seed(SEED)
+  go_graph <- plotGOgraph(tmp)
+  print(go_graph)
+  grid.text(paste0(names(enrichment_list[[LIST_LEVEL]][i]), " ", list_plot, " ", ont_plot),
+            x = 0.5, y = 0.95,
+            gp = gpar(fontsize = 12, fontface = "bold"))
+  # title(paste0(names(enrichment_list[[LIST_LEVEL]][i]), " ", list_plot, " ", ont_plot))
+}
+
+rm(go_graph)
 ```
 
 ```{r, echo=FALSE, results='asis'}

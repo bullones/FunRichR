@@ -98,7 +98,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   # because in @result all the genes are saved
   tmp <- tmp[tmp$p.adjust <= P_CUTOFF, ]
   tmp <- tmp[tmp$qvalue <= Q_CUTOFF,]
-  tmp <- tmp[, c(2, 8)]
+  tmp <- tmp[, c("Description", "geneID")]
   name <- names(enrichment_list[[LIST_LEVEL]])[i]
   final <- data.frame()
   for (j in 1:nrow(tmp)) {

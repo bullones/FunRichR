@@ -577,7 +577,8 @@ if (!check_KEGG) {
 ```
 
 
-```{r, eval=(EXPERIMENT==1 || (exists("DO_GSEA_3") && DO_GSEA_3)), child='Rmd/20_do-GSEA.Rmd'}
+```{r, eval=FALSE, include=FALSE, child='Rmd/20_do-GSEA.Rmd'}
+# eval=(EXPERIMENT==1 || (exists("DO_GSEA_3") && DO_GSEA_3))
 ```
 
 # Save data
