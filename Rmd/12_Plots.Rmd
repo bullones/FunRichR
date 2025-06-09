@@ -454,7 +454,7 @@ rm(p_tp)
 
 ```{r, echo=FALSE, results='asis'}
 if (!grepl("kegg", LIST_LEVEL)) {
-  cat("## Hierarchical tree\n")
+  cat("### Hierarchical tree\n")
 }
 # not available for KEGG results
 ```
