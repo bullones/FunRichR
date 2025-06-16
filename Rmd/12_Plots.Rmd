@@ -459,19 +459,36 @@ if (!grepl("kegg", LIST_LEVEL)) {
 # not available for KEGG results
 ```
 
-```{r, eval=!grepl("kegg", LIST_LEVEL), include=!grepl("kegg", LIST_LEVEL), fig.show = "hold", out.width = "50%", fig.height=6, fig.width=6, dpi=600, message=FALSE}
+```{r, eval=!grepl("kegg", LIST_LEVEL), include=!grepl("kegg", LIST_LEVEL), fig.show = "hold", out.width = "50%", fig.height=12, fig.width=12, dpi=600, message=FALSE}
 for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
+  # all enrichment results
+  tmp1 <- to_save[[LIST_LEVEL]][[i]]
+  set.seed(SEED)
+  if (SIGNODES == 0) {
+    signodes <- floor(nrow(tmp1)/2)
+  } else {
+    signodes <- SIGNODES
+  }
+  go_graph <- plotGOgraph(tmp1, firstSigNodes = signodes)
+  print(go_graph)
+  grid.text(paste0(names(enrichment_list[[LIST_LEVEL]][i]), " ", list_plot, " ", ont_plot, " complete (most relevant = ", signodes, ")"),
+            x = 0.5, y = 0.95,
+            gp = gpar(fontsize = 12, fontface = "bold"))
+  # after simplify if applied
   # we won't filter since we want all GOs to plot
   tmp <- enrichment_list[[LIST_LEVEL]][[i]]
   set.seed(SEED)
-  go_graph <- plotGOgraph(tmp)
+  if (SIGNODES == 0) {
+    signodes <- floor(nrow(tmp)/2)
+  } else {
+    signodes <- SIGNODES
+  }
+  go_graph <- plotGOgraph(tmp, firstSigNodes = signodes)
   print(go_graph)
-  grid.text(paste0(names(enrichment_list[[LIST_LEVEL]][i]), " ", list_plot, " ", ont_plot),
+  grid.text(paste0(names(enrichment_list[[LIST_LEVEL]][i]), " ", list_plot, " ", ont_plot, " simplified (most relevant = ", signodes, ")"),
             x = 0.5, y = 0.95,
             gp = gpar(fontsize = 12, fontface = "bold"))
-  # title(paste0(names(enrichment_list[[LIST_LEVEL]][i]), " ", list_plot, " ", ont_plot))
 }
-
 rm(go_graph)
 ```
 

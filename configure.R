@@ -290,6 +290,18 @@ MIN_GENES = 5
 # ////////////////////////////////////
 
 
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# SIGNIFICANT NODES TO PLOT ####
+#
+# For the hierarchical trees you can set the significant number of enriched GOs to be plotted. You can set it to 0 if you want it to be automatically calculated.
+#
+# Example:
+#   SIGNODES = 0
+
+SIGNODES = 0
+# //////////////////////////////
+
+
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # SIZE OF GENES FOR CLUSTERPROFILER ####
 #
