@@ -42,7 +42,7 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   tf_filt <- tmp4$Family
   tf_filt <- na.omit(tf_filt)
   
-  if ((!is_empty(tf_all) && !is_empty(tf_filt)) == TRUE) {
+  if (!is_empty(tf_all) && !is_empty(tf_filt)) {
     # number of TF for condition i
     tf_all <- table(tf_all)
     tf_filt <- table(tf_filt)
@@ -67,8 +67,10 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
     colnames(tf_merge) <- c("family", "total", "filtered")
     # tf_merge$Fisher <- NA
     # reshape the dataframe to use ggplot with it
-    tf_ggdata <- melt(tf_merge[, c('family', 'total', 'filtered')],
-                      id.vars = 1)
+    tf_ggdata <- pivot_longer(tf_merge[, c('family', 'total', 'filtered')],
+                              cols = c('total', 'filtered'),
+                              names_to = "variable",
+                              values_to = "value")
     # tf_ggdata$Fisher <- NA # for Fisher test
 
     # # data for Fisher test

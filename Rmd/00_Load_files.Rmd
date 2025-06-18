@@ -119,7 +119,8 @@ for (i in 1:length(FILE)) {
                                                      FILE[i]),
                                        sep = "\t",
                                        header = TRUE,
-                                       check.names = FALSE)
+                                       check.names = FALSE,
+                                       quote = "") # desactiva las comillas
 }
 # keep columns of interest
 genes_list <- list()
@@ -130,8 +131,8 @@ for (i in 1:length(counts)) {
   tmp_up <- tmp[tmp[[2]] > 0, ]
   tmp_down <- tmp[tmp[[2]] < 0, ]
   name <- names(counts[i])
-  genes_list[[paste0(name, ">control")]] <- tmp_up
-  genes_list[[paste0(name, "<control")]] <- tmp_down
+  genes_list[[gsub("-", ">", name)]] <- tmp_up
+  genes_list[[gsub("-", "<", name)]] <- tmp_down
 }
 ```
 

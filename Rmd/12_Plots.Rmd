@@ -880,9 +880,9 @@ if (nrow(tmp)) {
   if (width < 5) {
     width <- 5
   } # end if width
-  # minimum height 5
-  if (height < 2) {
-    height <- 2
+  # minimum height 3
+  if (height < 3) {
+    height <- 3
   } # end if height
 } # end if nrow(tmp)
 ```
