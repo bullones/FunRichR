@@ -608,7 +608,7 @@ if (length(network_plots[[LIST_LEVEL]]) != 0){
       colnames(tmp3)[4] <- "categories"
       set.seed(SEED)
       p_nt_int <- ggplot(tmp3,
-                         aes(x = x, y = y, name = name)) +
+                         aes(x = x, y = y, name = label)) +
           geom_point(aes(color = categories), size = 2) +
         scale_color_manual(name = "Processes including:",
                            breaks = c("Transcription factors", "Genes of interest", "TF and GoI", "None"),
@@ -625,7 +625,7 @@ if (length(network_plots[[LIST_LEVEL]]) != 0){
       tmp <- tmp[, 1:3]
       set.seed(SEED)
       p_nt_int <- ggplot(tmp,
-                         aes(x = x, y = y, name = name)) +
+                         aes(x = x, y = y, name = label)) +
           geom_point(aes(color = "#0099f9"), size = 2) +
         theme(legend.position = "none") +
           ggtitle(paste0(names(network_plots[[LIST_LEVEL]][i]), " enriched ", list_plot, " ", ont_plot))
@@ -897,5 +897,7 @@ pheatmap(as.matrix(tmp_final),
          fontsize = 6,
          color = colorRampPalette(c("#3E7FB9", "white", "#DD6360"))(length(breaks) - 1),
          breaks = breaks,
-         main = paste0("Overview of ", LIST_LEVEL, " based on the EnrichRatio"))
+         main = paste0("Overview of ", LIST_LEVEL, " based on the EnrichRatio"),
+         cellwidth = 7,
+         cellheight = 7)
 ```
