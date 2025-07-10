@@ -7,8 +7,7 @@ enrichment_list[[LIST_LEVEL]] <- list()
 to_save[[LIST_LEVEL]] <- list()
 number_genes_enrichment[[LIST_LEVEL]] <- list()
 # fill the sublist with over-enrichment results
-for (i in 1:length(genes_list_arab))
-{
+for (i in 1:length(genes_list_arab)) {
   # if (ncol(genes_list_arab[[i]])==1) {
   #   col <- 1
   # } else {
@@ -26,8 +25,13 @@ for (i in 1:length(genes_list_arab))
                    maxGSSize = MAX_GSSIZE,
                    readable = FALSE,
                    pool = FALSE)
-  
-  temp@result$EnrichRatio <- temp@result$Count / as.numeric(gsub("/.*", "",temp@result$BgRatio))
+  # add EnrichRatio column
+  if (!is.null(temp)) {
+    temp@result$EnrichRatio <- temp@result$Count / as.numeric(gsub("/.*", "",temp@result$BgRatio))
+  } else {
+    message(paste0("0 enrichment terms found for ", names(genes_list_arab)[i]))
+    next
+  }
   # save before filter
   if (nrow(temp)) {
     name <- names(genes_list_arab)[i]

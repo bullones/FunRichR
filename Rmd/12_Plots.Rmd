@@ -890,9 +890,11 @@ if (nrow(tmp)) {
 ```{r, fig.height=height, fig.width=width, eval=grepl("OE", LIST_LEVEL), include=grepl("OE", LIST_LEVEL)}
 max_abs <- max(abs(c(min(tmp_final), max(tmp_final))))
 breaks <- seq(-max_abs, max_abs, length.out = 100)
+# check if enough genes to cluster
+cluster <- ifelse(nrow(tmp_final) > 1, TRUE, FALSE)
 pheatmap(as.matrix(tmp_final),
          cluster_cols = FALSE,
-         cluster_rows = TRUE,
+         cluster_rows = cluster,
          border_color = NA,
          fontsize = 6,
          color = colorRampPalette(c("#3E7FB9", "white", "#DD6360"))(length(breaks) - 1),

@@ -529,7 +529,11 @@ for (i in 1:length(genes_list_kegg)) {
                      pAdjustMethod = P_ADJUST_METHOD,
                      minGSSize = MIN_GSSIZE,
                      maxGSSize = MAX_GSSIZE)
-  
+  if (is.null(temp)) {
+    message(paste0("0 KEGG pathways found for ", names(genes_list_kegg)[i]))
+    next
+  }
+    
   # # check if there was enrichment
   # empty <- length(temp$ID) == 0
   # if it's empty we don't save it in the list
@@ -604,6 +608,8 @@ message(paste0("Data was succesfully saved at ", SUB_DIR))
 ```
 
 ```{r save_original}
+# remove empty sublists in to_save before saving
+to_save <- to_save[lapply(to_save, length) > 0]
 # save original tables
 for(i in 1:length(to_save)) {
   for(j in names(to_save[[i]])) {
