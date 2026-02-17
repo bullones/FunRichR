@@ -128,6 +128,7 @@ WD_DIR = "~/datos_bullones/Bioinformatica/data/"
 # File must be in tsv format
 # File must be within the working directory (WD_DIR)
 # REQUIRED: the first column must contain the gene IDs
+# REQUIRED: the file MUST have a header
 #
 # Example:
 #   FILE = "my_file.tsv"

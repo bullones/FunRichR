@@ -95,7 +95,7 @@ Parameters customisable in the `configure.R`:
     + `STUDY_COLUMN`: column to read from `ORTHOLOGY_FILE` with the study organism. **Compulsory**
 - `KEYTYPE`: define the format of your input genes. **Compulsory**
 - If you want to mark the transcription factors from your model reference, you have to uncomment
-    + `TF_FILE`: provide the absolute path to your transcription factors file. *Optional*
+    + `TF_FILE`: provide the absolute path to your transcription factors file. This file can be downloaded from [PlantTFDB](http://planttfdb.gao-lab.org/) website. *Optional*
 - If you want to mark other important genes from your study organism, you have to uncomment
     + `OTHER_FILE`: provide the absolute path to your file with genes of interest. *Optional*
 - `SHOW_CODE`: `TRUE` if you want the complete report showing code chunks, or `FALSE` if you want to hide (fold) code chunks. *Optional*
@@ -118,13 +118,23 @@ As a result of this `configure.R` file customisation, you can have as many copie
 
 ***
 
-## Input file
+## Compulsory customisation before the first run
+
+Under construction
 
 ***
 
-## TF file (optional)
+## Input file
 
-You can download the TF file in <http://planttfdb.gao-lab.org/>.
+You need to customise the `configure.R` file with the variables indicated above. Data for your specific experiment are defined in the `FILE` variable. You have four possibilities (see above):
+
+1. The output table obtained in the execution of [RSeqFlow](https://github.com/mgclaros/RSeqFlow) pipeline: one of the two _AllGenes_allContrast_ output tsv tables. _FunRichR_ will perform as many analyses as contrasts were defined in the _RSeqFlow_ execution. **Recommended**
+2. One tsv file that defines how genes are grouped into clusters or categories for downstream analyses. The first column must contain the gene ID, and the second column must contain the cluster/group label assigning each gene to a specific group. _FunRichR_ will perform as many analyses as groups are defined in the file.
+3. One tsv file containing the gene ID in the first column, and their Log(Fold change) in the second column. Genes will be divided in two groups according to the Log(Fold change) info: up- and down-regulated genes, and _FunRichR_ will perform two analyses.
+4. One txt file containing only gene IDs. _FunRichR_ will perform only one analysis.
+
+All input files **MUST** have a header.
+
 
 ***
 
