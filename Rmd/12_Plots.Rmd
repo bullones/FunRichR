@@ -439,12 +439,21 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   }
   # check NCLUST is not bigger than 15
   if (NCLUST > 15) NCLUST <- 15
+  # check NCLUST is not 1 because sometimes it fails
+  if (NCLUST == 1) NCLUST <- 2
   # treeplot
   p_tp <- treeplot(tmp_tree,
                    showCategory = nrow(tmp_tree),
-                   fontsize = 3,
-                   # label_format_tiplab = 35,
-                   cluster.params = list(label_words_n = 5, label_format = 30, n = NCLUST)) +
+                   fontsize_tiplab = 3, # variable fontsize has changed to fontsize_tiplab and fontsize_cladelab
+                   fontsize_cladelab = 3,
+                   nCluster = NCLUST,
+                   label_format = 30) +
+    # cluster.params seems to not work anymore
+                   # cluster.params = list(
+                   #   label_words_n = 5, # number of words in cluster labels
+                   #   label_format = 30, # wrapping of cluster labels
+                   #   n = NCLUST # number of clusters
+                   #   )) +
     ggtitle(paste0(names(enrichment_list[[LIST_LEVEL]][i]), " enriched ", list_plot, " ", ont_plot)) +
     theme(plot.title = element_text(hjust = 0.9))
   print(p_tp)

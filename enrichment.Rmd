@@ -132,6 +132,7 @@ Keytype of input gene for enrichment | `r KEYTYPE`
 Adjusted pvalue cutoff for enrichment | `r P_CUTOFF`
 Qvalue cutoff for enrichment | `r Q_CUTOFF`
 Method for adjuted pvalue for enrichment | `r P_ADJUST_METHOD`
+Background file | `r ifelse(exists("BACKGROUND_FILE"), BACKGROUND_FILE, "default")`
 Minimal size of genes annotated for enrichment analyses | `r ifelse(MIN_GSSIZE_USER, MIN_GSSIZE_USER, "default")`
 Maximal size of genes annotated for enrichment analyses | `r ifelse(MAX_GSSIZE_USER, MAX_GSSIZE_USER, "default")`
 Remove redundancy of GO terms | `r DO_REMOVE_REDUNDANCY`
@@ -209,6 +210,18 @@ for (i in 1:length(genes_list))
   } else {
     message(paste0("No orthologs found for ", names(genes_list)[i]))
   }
+}
+
+# if the user specified a background file, convert the IDs
+if (exists("BACKGROUND_FILE")){
+  bckg <- merge(x = bckg,
+                y = ort,
+                by = 1,
+                all = FALSE)
+  # keep unique values for the model organism
+  bckg <- unique(bckg[2])
+  # remove isoforms
+  bckg[[1]] <- gsub('\\.[0-9]', "", bckg[[1]])
 }
 ```
 

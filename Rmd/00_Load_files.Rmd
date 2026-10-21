@@ -136,7 +136,6 @@ for (i in 1:length(counts)) {
 }
 ```
 
-
 ```{r load_ort, eval=!is.na(ORTHOLOGY_FILE) , include=!is.na(ORTHOLOGY_FILE)}
 ort <- read.table(file = ORTHOLOGY_FILE,
                   sep = "\t",
@@ -145,3 +144,8 @@ ort <- read.table(file = ORTHOLOGY_FILE,
 ort <- ort[, c(STUDY_COLUMN, REFERENCE_COLUMN)]
 ```
 
+```{r load_bckg, eval=exists("BACKGROUND_FILE")}
+# load background file
+bckg <- read.table(file = BACKGROUND_FILE,
+                   header = TRUE)
+```

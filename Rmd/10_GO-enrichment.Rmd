@@ -14,17 +14,38 @@ for (i in 1:length(genes_list_arab)) {
   #   col <- 2
   # }
   col <- colnames(genes_list_arab[[i]])[which(apply(genes_list_arab[[i]], 2, function(col) any(grepl("^AT[1-5]G\\d{5}$", col, perl = TRUE), na.rm = TRUE)))[1]]
-  temp <- enrichGO(gene = genes_list_arab[[i]][[col]],
-                   OrgDb = organism,
-                   keyType = KEYTYPE,
-                   ont = ONT,
-                   pvalueCutoff = P_CUTOFF,
-                   qvalueCutoff = Q_CUTOFF,
-                   pAdjustMethod = P_ADJUST_METHOD,
-                   minGSSize = MIN_GSSIZE,
-                   maxGSSize = MAX_GSSIZE,
-                   readable = FALSE,
-                   pool = FALSE)
+  # base argument list for enrichGO call
+  enrich_vars <- list(
+    gene = genes_list_arab[[i]][[col]],
+    OrgDb = organism,
+    keyType = KEYTYPE,
+    ont = ONT,
+    pvalueCutoff = P_CUTOFF,
+    qvalueCutoff = Q_CUTOFF,
+    pAdjustMethod = P_ADJUST_METHOD,
+    minGSSize = MIN_GSSIZE,
+    maxGSSize = MAX_GSSIZE,
+    readable = FALSE,
+    pool = FALSE
+  )
+  # add universe if the user provided a file
+  if (exists("BACKGROUND_FILE")) {
+    enrich_vars$universe <- bckg[[1]]
+  }
+  # call enrichGO with the needed variables
+  temp <- do.call(enrichGO, enrich_vars)
+  # launching enrichGO this way instead of the old one allows us to use our own universe, or keep the default one
+  # temp <- enrichGO(gene = genes_list_arab[[i]][[col]],
+  #                  OrgDb = organism,
+  #                  keyType = KEYTYPE,
+  #                  ont = ONT,
+  #                  pvalueCutoff = P_CUTOFF,
+  #                  qvalueCutoff = Q_CUTOFF,
+  #                  pAdjustMethod = P_ADJUST_METHOD,
+  #                  minGSSize = MIN_GSSIZE,
+  #                  maxGSSize = MAX_GSSIZE,
+  #                  readable = FALSE,
+  #                  pool = FALSE)
   # add EnrichRatio column
   if (!is.null(temp)) {
     temp@result$EnrichRatio <- temp@result$Count / as.numeric(gsub("/.*", "",temp@result$BgRatio))
