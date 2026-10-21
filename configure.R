@@ -1,5 +1,5 @@
 # configure for enrichment analyses
-# 24/02/09
+# 26/10/21
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # DON'T TOUCH: CLEAN START ####
@@ -274,9 +274,9 @@ SHOW_CODE = TRUE
 # FALSE: duplicate genes will not be removed
 #
 # Example:
-#   DO_REMOVE_DUPS = TRUE
+#   DO_REMOVE_DUPS = FALSE
 
-DO_REMOVE_DUPS = TRUE
+DO_REMOVE_DUPS = FALSE
 # /////////////////////////////////////
 
 
@@ -313,6 +313,26 @@ P_CUTOFF = 0.05
 
 Q_CUTOFF = 0.2
 # //////////////////////////
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# LOAD YOUR BACKGROUND GENES ####
+#
+# Using a custom background for enrichment tests is heavily recommended. This background contains the genes that were analyzed in your experiment (e.g. those on which you performed the DEGs analyses after filtering them to remove low-expression genes)
+# Uncomment BACKGROUND_FILE line and specify the absolute path to your file in case you want to activate this function
+# In the other case, comment BACKGROUND_FILE line
+#
+# Absolute path to your background file
+# File must be in txt format
+# REQUIRED: the file MUST have a header
+# REQUIRED: the file MUST have only one column with the gene IDs
+# If your study organism if not a model reference (MODEL_REFERENCE = FALSE), you MUST use the IDs from your study organism since the workflow will automatically convert them to the model reference IDs using the same orthology file you configured before (ORTHOLOGY_FILE)
+#
+# Example:
+#   BACKGROUND_FILE = "~/Documents/bckg.txt"
+
+BACKGROUND_FILE = "~/datos_bullones/Bioinformatica/bckg_roots.txt"
+# ///////////////////////////////
 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%
