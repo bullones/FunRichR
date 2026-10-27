@@ -256,7 +256,8 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
   }
   # check if we have any process. If not, skip
   if (!nrow(tmp)) {
-    message("No terms with MIN_GENES >= ", MIN_GENES)
+    message("No terms with MIN_GENES >= ", MIN_GENES,
+            " for ", names(enrichment_list[[LIST_LEVEL]][i]))
     next
   } # end if
   # check if there are enough terms to be plotted
