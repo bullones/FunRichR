@@ -103,6 +103,8 @@ Parameters customisable in the `configure.R`:
 - `P_ADJUST_METHOD`: statistical method used to adjust _P_-values. *Optional*
 - `P_CUTOFF`: minimal _P_-value for significance in any statistical analysis. *Optional*
 - `Q_CUTOFF`: minimal _Q_-value for significance in any statistical analysis. *Optional*
+- If you want to use a custom background for enrichment tests (heavily recommended), you have to uncomment
+    + `BACKGROUND_FILE`: provide the absolute path to your file with the genes that were analyzed in your experiment (e.g. those on which you performed the DEGs analyses after filtering them to remove low-expression genes). *Optional*
 - `NCLUST_USER`: indicate the number of clusters that you want to obtain for treeplots. *Optional*
 - `MIN_GENES`: minimum number of genes for a process to be plotted. *Optional*
 - `SIGNODES`: significant number of enriched GOs to be plotted for hierarchical trees. *Optional*
