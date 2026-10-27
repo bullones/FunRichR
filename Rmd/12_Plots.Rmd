@@ -713,9 +713,8 @@ for (i in 1:length(enrichment_list[[LIST_LEVEL]])) {
 EXPLICAR
 
 ```{bash, eval=!grepl("GSEA", LIST_LEVEL), include=!grepl("GSEA", LIST_LEVEL), message = FALSE, results='hide'}
-for file in wordclouds/*.tsv;
-do
-cat $file |
+for file in wordclouds/*.tsv; do
+cat "$file" |
 # converting text to lowercase
 tr '[:upper:]' '[:lower:]' |
 # extract words and put the on separate line
@@ -729,11 +728,11 @@ uniq -c |
 # sort the list by count
 sort -nr |
 # save the file
-tee $file.wc |
+tee "$file".wc |
 # show top 4 lines
-head -n 4
+# head -n 4
 # remove $file
-rm $file
+rm "$file"
 done
 ```
 
